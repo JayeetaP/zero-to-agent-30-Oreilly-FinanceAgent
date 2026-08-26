@@ -1,0 +1,15 @@
+{
+  "research": {
+    "preferred_sources": [],
+    "excluded_topics": []
+  },
+  "editorial": {
+    "tone": "direct, calm, beginner-friendly",
+    "lead_with_implication": false,
+    "jargon_level": "define unfamiliar terms"
+  },
+  "display": {
+    "currency_style": "USD 4.2 billion",
+    "date_style": "25 Aug 2026"
+  }
+}

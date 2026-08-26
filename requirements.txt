@@ -1,0 +1,12 @@
+agno==3.0.0
+ddgs>=9,<10
+fastapi>=0.116,<1
+httpx>=0.28,<1
+ollama>=0.6,<1
+# Agno 3.0 imports this compatibility adapter when loading its Ollama package.
+# The app never creates an OpenAI client and does not need an OpenAI API key.
+openai>=1.106,<3
+pydantic>=2.11,<3
+python-dotenv>=1.1,<2
+pytest>=8,<10
+uvicorn>=0.35,<1

@@ -1,0 +1,305 @@
+{
+  "sustainable": [
+    {
+      "title": "Core sustainability developments",
+      "purpose": "Material operating and disclosure signals.",
+      "items": [
+        {
+          "headline": "Supplier emissions reporting becomes more specific",
+          "what_happened": "A synthetic company filing adds product-level emissions fields to its supplier requirements.",
+          "why_it_matters": "More specific data can make transition claims easier for an analyst to verify.",
+          "watch_next": "Whether suppliers publish comparable methods and assurance statements.",
+          "source": "SEC / company filing direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Grid investment moves from target to procurement",
+          "what_happened": "A synthetic news item describes a utility opening bids for transmission upgrades.",
+          "why_it_matters": "Procurement is a more concrete demand signal than a long-range capital target.",
+          "watch_next": "Award timing, allowed returns, and equipment lead times.",
+          "source": "Reuters direction",
+          "url": "https://www.reuters.com/markets/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Water risk appears in an operating update",
+          "what_happened": "A sample issuer flags water availability as a constraint at two facilities.",
+          "why_it_matters": "A physical risk becomes financially relevant when it affects capacity or cost.",
+          "watch_next": "Mitigation spending and changes to production guidance.",
+          "source": "Company filing direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    },
+    {
+      "title": "Companies and capital",
+      "purpose": "How companies are funding and executing change.",
+      "items": [
+        {
+          "headline": "Transition project reaches a financing milestone",
+          "what_happened": "A demonstration project secures USD 4.2 billion of committed financing.",
+          "why_it_matters": "Committed capital lowers execution uncertainty but does not remove construction risk.",
+          "watch_next": "Conditions before funds can be drawn and the sponsor equity contribution.",
+          "source": "Reuters direction",
+          "url": "https://www.reuters.com/markets/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Capital plan separates maintenance from transition spend",
+          "what_happened": "A sample investor presentation reports the two spending categories independently.",
+          "why_it_matters": "The split shows what preserves the business and what may reshape it.",
+          "watch_next": "Whether management reports returns for each category.",
+          "source": "Company investor-relations direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Sustainability-linked pricing becomes measurable",
+          "what_happened": "A fixture credit agreement publishes a margin adjustment and a target test date.",
+          "why_it_matters": "Specific terms make it possible to judge whether the incentive is meaningful.",
+          "watch_next": "Independent verification and the cost if the target is missed.",
+          "source": "SEC filing direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    },
+    {
+      "title": "Policy, markets and risks",
+      "purpose": "External changes that may alter the business case.",
+      "items": [
+        {
+          "headline": "Disclosure timetable creates a data checkpoint",
+          "what_happened": "A sample policy update clarifies when covered companies must report selected metrics.",
+          "why_it_matters": "A firm date tells the analyst when comparable evidence may become available.",
+          "watch_next": "Scope exemptions and implementation guidance.",
+          "source": "Financial Times direction",
+          "url": "https://www.ft.com/markets",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Carbon-market activity rises while pricing stays uneven",
+          "what_happened": "A synthetic market report shows more trading but wide differences by contract type.",
+          "why_it_matters": "Volume alone does not prove a reliable price signal.",
+          "watch_next": "Contract quality rules and concentration among buyers.",
+          "source": "CNBC direction",
+          "url": "https://www.cnbc.com/finance/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Insurance renewal highlights physical-risk costs",
+          "what_happened": "A fixture update reports higher insurance premiums for exposed assets.",
+          "why_it_matters": "Insurance can translate a broad climate risk into an observable operating cost.",
+          "watch_next": "Deductibles, exclusions, and resilience spending.",
+          "source": "Company filing direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    }
+  ],
+  "consumer": [
+    {
+      "title": "Consumer demand signals",
+      "purpose": "What households are buying and where demand is changing.",
+      "items": [
+        {
+          "headline": "Households trade down in one category, not everywhere",
+          "what_happened": "A demo retailer reports more private-label grocery purchases while premium beauty holds up.",
+          "why_it_matters": "A single consumer-strength headline can hide important category differences.",
+          "watch_next": "Unit volumes, basket size, and repeat purchases.",
+          "source": "Reuters direction",
+          "url": "https://www.reuters.com/business/retail-consumer/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Promotions lift traffic but pressure margins",
+          "what_happened": "A sample earnings update links higher store visits to deeper discounting.",
+          "why_it_matters": "Sales growth is less valuable when a company gives up profit to generate it.",
+          "watch_next": "Whether promotions persist after seasonal inventory clears.",
+          "source": "CNBC direction",
+          "url": "https://www.cnbc.com/retail/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Services spending remains firmer than goods",
+          "what_happened": "A fixture report shows travel and entertainment outpacing discretionary goods.",
+          "why_it_matters": "Category rotation can create winners even when total household budgets are stable.",
+          "watch_next": "Booking windows and cancellation rates.",
+          "source": "Financial Times direction",
+          "url": "https://www.ft.com/consumer-industries",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    },
+    {
+      "title": "Companies and brands",
+      "purpose": "How management teams respond through price, product, and inventory.",
+      "items": [
+        {
+          "headline": "Brand resets prices after an elasticity test",
+          "what_happened": "A demonstration filing says selected price increases reduced unit demand more than expected.",
+          "why_it_matters": "Price elasticity describes how demand changes when price changes and affects growth quality.",
+          "watch_next": "Volume recovery and competitor reactions.",
+          "source": "SEC filing direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Inventory discipline releases working capital",
+          "what_happened": "A sample retailer reduces seasonal inventory by USD 950 million year over year.",
+          "why_it_matters": "Less cash tied up in inventory can strengthen near-term financial flexibility.",
+          "watch_next": "Whether leaner stock causes missed sales.",
+          "source": "Company filing direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Loyalty data becomes central to advertising strategy",
+          "what_happened": "A fixture presentation expands a retail-media program using purchase data.",
+          "why_it_matters": "The revenue stream may carry higher margins but raises privacy questions.",
+          "watch_next": "Advertiser retention and data-consent controls.",
+          "source": "Company investor-relations direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    },
+    {
+      "title": "Economy and risks",
+      "purpose": "External pressures on household budgets and company outlooks.",
+      "items": [
+        {
+          "headline": "Credit costs diverge across consumer groups",
+          "what_happened": "A demo report shows borrowing stress concentrated among lower-income cohorts.",
+          "why_it_matters": "An average can look stable while the most exposed customers weaken.",
+          "watch_next": "Delinquency transitions and lender underwriting changes.",
+          "source": "Reuters direction",
+          "url": "https://www.reuters.com/markets/us/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Freight relief reaches shelves unevenly",
+          "what_happened": "A sample story finds lower transport costs passing through faster in some categories.",
+          "why_it_matters": "Cost relief may support margins or lower prices depending on competition.",
+          "watch_next": "Gross-margin guidance and category pricing gaps.",
+          "source": "Financial Times direction",
+          "url": "https://www.ft.com/markets",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Wage growth supports demand but keeps labor costs elevated",
+          "what_happened": "A fixture analysis pairs stronger pay with persistent service-sector staffing costs.",
+          "why_it_matters": "The same trend can help revenue and hurt margins.",
+          "watch_next": "Hours worked, hiring plans, and price changes.",
+          "source": "CNBC direction",
+          "url": "https://www.cnbc.com/economy/",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    }
+  ],
+  "private-credit": [
+    {
+      "title": "Borrowers and deals",
+      "purpose": "New financings, refinancings, and borrower-level signals.",
+      "items": [
+        {
+          "headline": "Refinancing extends maturity but adds lender protection",
+          "what_happened": "A demo borrower replaces a near-term maturity with tighter reporting terms.",
+          "why_it_matters": "More time helps liquidity; added covenants show lenders still see risk.",
+          "watch_next": "Cash interest coverage and covenant headroom.",
+          "source": "Reuters direction",
+          "url": "https://www.reuters.com/markets/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Unitranche financing backs a software acquisition",
+          "what_happened": "A fixture deal combines senior and junior risk in one USD 1.1 billion private loan.",
+          "why_it_matters": "A unitranche simplifies execution but concentrates negotiation with fewer lenders.",
+          "watch_next": "Leverage, recurring revenue quality, and integration costs.",
+          "source": "Financial Times direction",
+          "url": "https://www.ft.com/private-capital",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Amend-and-extend trades price for time",
+          "what_happened": "A sample borrower pays a higher spread to move its loan maturity out two years.",
+          "why_it_matters": "The deal avoids an immediate refinancing wall but raises interest expense.",
+          "watch_next": "Free cash flow after the higher coupon.",
+          "source": "Company filing direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    },
+    {
+      "title": "Lenders and capital",
+      "purpose": "Fundraising, deployment, and competition among lenders.",
+      "items": [
+        {
+          "headline": "New fund closes above its predecessor",
+          "what_happened": "A demonstration manager reports USD 6.5 billion of direct-lending commitments.",
+          "why_it_matters": "More available capital can intensify competition for high-quality borrowers.",
+          "watch_next": "Deployment pace and underwriting terms.",
+          "source": "Reuters direction",
+          "url": "https://www.reuters.com/markets/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Banks and private lenders share a financing",
+          "what_happened": "A fixture transaction uses a bank-led revolver and private term debt.",
+          "why_it_matters": "The markets can complement each other rather than always compete.",
+          "watch_next": "Collateral priority and refinancing options.",
+          "source": "Financial Times direction",
+          "url": "https://www.ft.com/private-capital",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Portfolio marks hold as non-accruals edge up",
+          "what_happened": "A sample lender reports slightly more loans that stopped paying cash interest.",
+          "why_it_matters": "Stable valuations and weaker cash performance should be examined together.",
+          "watch_next": "Realized losses, restructurings, and payment-in-kind income.",
+          "source": "SEC filing direction",
+          "url": "https://www.sec.gov/edgar/search/",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    },
+    {
+      "title": "Risk and market context",
+      "purpose": "Rates, documentation, defaults, and cross-market signals.",
+      "items": [
+        {
+          "headline": "Documentation loosens for top-tier borrowers",
+          "what_happened": "A demo report finds fewer lender protections in competitive deals.",
+          "why_it_matters": "Strong borrowers may win flexibility that leaves fewer early-warning triggers.",
+          "watch_next": "Add-backs, debt baskets, and reporting frequency.",
+          "source": "Financial Times direction",
+          "url": "https://www.ft.com/private-capital",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Base-rate move changes the interest burden",
+          "what_happened": "A fixture analysis estimates lower floating rates reduce annual borrower interest expense.",
+          "why_it_matters": "Most private loans float, so rate changes reach cash flow relatively quickly.",
+          "watch_next": "Rate floors and whether savings support debt paydown.",
+          "source": "CNBC direction",
+          "url": "https://www.cnbc.com/finance/",
+          "publication_date": "Demo fixture"
+        },
+        {
+          "headline": "Restructuring clusters in older vintages",
+          "what_happened": "A sample report finds stress among deals underwritten before borrowing costs rose.",
+          "why_it_matters": "Origination year can help explain leverage and documentation risk.",
+          "watch_next": "Recovery values and sponsor support.",
+          "source": "Reuters direction",
+          "url": "https://www.reuters.com/markets/",
+          "publication_date": "Demo fixture"
+        }
+      ]
+    }
+  ]
+}

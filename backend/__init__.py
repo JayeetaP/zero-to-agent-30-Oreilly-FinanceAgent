@@ -1,0 +1,2 @@
+"""Briefing Lab backend package."""
+
