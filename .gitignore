@@ -7,5 +7,6 @@ __pycache__/
 .coverage
 htmlcov/
 data/memory.local.json
+data/memory.db*
 CODEBASE_BUILD_PLAN.md
 SESSION_PLAN.md

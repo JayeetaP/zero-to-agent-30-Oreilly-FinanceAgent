@@ -84,13 +84,18 @@ def test_ui_and_sample_copy_follow_the_style_rule() -> None:
     assert "synthetic" not in sample_copy.lower()
     assert "insufficient evidence" not in ui_copy.lower()
     assert "insufficient evidence" not in sample_copy.lower()
+    assert "beginner-friendly" not in ui_copy.lower()
+    assert "Active memory" in ui_copy
+    assert "Memory history" in ui_copy
 
 
 def test_feedback_is_proposed_before_preferences_are_written(tmp_path: Path, monkeypatch) -> None:
-    from backend import workflow
+    from backend import memory
 
-    memory_file = tmp_path / "memory.local.json"
-    monkeypatch.setattr(workflow, "MEMORY_FILE", memory_file)
+    memory_file = tmp_path / "memory.db"
+    monkeypatch.setattr(memory, "MEMORY_DB_FILE", memory_file)
+    monkeypatch.setattr(memory, "LEGACY_MEMORY_FILE", tmp_path / "legacy.json")
+    memory._manager_for.cache_clear()
     _, _, briefing = run_sample_workflow()
 
     proposal_response = client.post(
@@ -107,7 +112,54 @@ def test_feedback_is_proposed_before_preferences_are_written(tmp_path: Path, mon
     assert proposal["editorial"]["lead_with_implication"] is True
     assert not memory_file.exists()
 
-    approval = client.post("/api/memory/approve", json={"patch": proposal})
+    approval = client.post(
+        "/api/memory/approve",
+        json={"patch": proposal, "feedback": "Use $4.2bn and lead with the implication."},
+    )
     assert approval.status_code == 200
     assert approval.json()["version"] == 1
+    assert approval.json()["history"][0]["changes"]
     assert memory_file.exists()
+
+
+def test_three_feedback_rounds_create_visible_history_and_can_be_reactivated(
+    tmp_path: Path, monkeypatch
+) -> None:
+    from backend import memory
+
+    monkeypatch.setattr(memory, "MEMORY_DB_FILE", tmp_path / "memory.db")
+    monkeypatch.setattr(memory, "LEGACY_MEMORY_FILE", tmp_path / "legacy.json")
+    memory._manager_for.cache_clear()
+
+    first = PreferencePatch()
+    first.editorial.lead_with_implication = True
+    second = first.model_copy(deep=True)
+    second.display.currency_style = "$4.2bn"
+    third = second.model_copy(deep=True)
+    third.research.preferred_sources = ["Reuters"]
+
+    rounds = [
+        (first, "Lead with the implication."),
+        (second, "Use compact currency."),
+        (third, "Prioritize Reuters."),
+    ]
+    for patch, feedback in rounds:
+        response = client.post(
+            "/api/memory/approve",
+            json={"patch": patch.model_dump(), "feedback": feedback},
+        )
+        assert response.status_code == 200
+
+    saved = client.get("/api/memory").json()
+    assert saved["active_version"] == 3
+    assert saved["latest_version"] == 3
+    assert [item["version"] for item in saved["history"]] == [3, 2, 1]
+    assert saved["history"][0]["changes"][0]["path"] == "research.preferred_sources"
+    assert saved["history"][1]["changes"][0]["path"] == "display.currency_style"
+
+    activated = client.post("/api/memory/activate", json={"version": 1})
+    assert activated.status_code == 200
+    assert activated.json()["active_version"] == 1
+    assert activated.json()["latest_version"] == 3
+    assert activated.json()["preferences"]["editorial"]["lead_with_implication"] is True
+    assert activated.json()["preferences"]["display"]["currency_style"] == "USD 4.2 billion"

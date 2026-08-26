@@ -15,6 +15,7 @@
         <a href="#workflow">Create</a>
         <a href="#agents">Agents</a>
         <a href="#briefing">Briefing</a>
+        <a href="#memory">Memory</a>
         <a href="#repository">Code</a>
       </nav>
       <div class="server-state" id="server-state">Checking local model</div>
@@ -37,7 +38,7 @@
             <div><dt>Plan</dt><dd>choose useful coverage</dd></div>
             <div><dt>Research</dt><dd>find and validate sources</dd></div>
             <div><dt>Write</dt><dd>explain the implications</dd></div>
-            <div><dt>Learn</dt><dd>save approved preferences</dd></div>
+            <div><dt>Memory</dt><dd>approve and reuse preferences</dd></div>
           </dl>
         </aside>
       </section>
@@ -162,9 +163,9 @@
             <article class="agent-card" data-card="feedback">
               <span class="agent-number">4</span>
               <div>
-                <div class="agent-title"><h3>Feedback and Preferences</h3><span data-status="feedback">Waiting</span></div>
+                <div class="agent-title"><h3>Feedback and Memory</h3><span data-status="feedback">Waiting</span></div>
                 <code>learn-briefing-preferences</code>
-                <p>Proposes presentation preferences. A person approves every saved change.</p>
+                <p>Proposes typed preferences. A person approves every version before Agno memory saves it.</p>
                 <div class="agent-output" id="feedback-output"></div>
               </div>
               <button type="button" data-run="feedback">Run</button>
@@ -195,20 +196,37 @@
         <article class="briefing-document" id="briefing-document" hidden></article>
       </section>
 
-      <section class="feedback-section">
+      <section class="feedback-section" id="memory">
         <div>
-          <p class="eyebrow">04 · Refine</p>
-          <h2>Save presentation preferences with approval.</h2>
-          <p>Preferences control tone, currency, dates, detail, and source priority. They never change the evidence.</p>
+          <p class="eyebrow">04 · Memory</p>
+          <h2>Review, approve, and reuse preferences.</h2>
+          <p>Memory controls tone, currency, dates, detail, and source priority. It never changes the evidence.</p>
         </div>
-        <div class="feedback-card">
-          <label>
-            <span>Your feedback</span>
-            <textarea id="feedback" rows="4">Use $4.2bn instead of USD 4.2 billion. Lead with the implication and keep the tone direct.</textarea>
-          </label>
-          <button class="primary-button" id="run-feedback" type="button" disabled>Review feedback</button>
-          <div id="proposal"></div>
-          <p class="memory-state" id="memory-state">No approved local preferences yet.</p>
+        <div class="memory-workspace">
+          <div class="feedback-card">
+            <label>
+              <span>Your feedback</span>
+              <textarea id="feedback" rows="4">Use $4.2bn instead of USD 4.2 billion. Lead with the implication and keep the tone direct.</textarea>
+            </label>
+            <button class="primary-button" id="run-feedback" type="button" disabled>Review feedback</button>
+            <div id="proposal"></div>
+          </div>
+          <div class="memory-panel">
+            <div class="memory-panel-heading">
+              <div><p class="eyebrow">Active memory</p><h3>Approved preferences</h3></div>
+              <span id="memory-version">Defaults</span>
+            </div>
+            <div id="active-memory"></div>
+            <div class="memory-used-by">
+              <strong>Used by</strong>
+              <span>Planner and Researcher: sources and exclusions</span>
+              <span>Writer: tone, implication order, and jargon</span>
+              <span>Renderer: currency and date format</span>
+            </div>
+            <div class="memory-history-heading"><h3>Memory history</h3><span>Approved versions</span></div>
+            <div id="memory-history"></div>
+            <p class="memory-state" id="memory-state">No approved local preferences yet.</p>
+          </div>
         </div>
       </section>
 

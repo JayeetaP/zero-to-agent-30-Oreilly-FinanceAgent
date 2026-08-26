@@ -9,7 +9,8 @@ import httpx
 from pydantic import BaseModel
 
 from .agents import editor_agent, feedback_agent, planner_agent, research_agent
-from .config import MEMORY_FILE, OLLAMA_HOST, OLLAMA_MODEL, SAMPLE_FILE
+from .config import OLLAMA_HOST, OLLAMA_MODEL, SAMPLE_FILE
+from .memory import active_preferences
 from .models import (
     AnalystBriefing,
     BriefRequest,
@@ -86,8 +87,11 @@ def _coverage_window(days: int) -> str:
     return f"{start.strftime('%B')} {start.day}, {start.year} to {end.strftime('%B')} {end.day}, {end.year}"
 
 
-def _preferred_domains(request: BriefRequest) -> list[str]:
-    domains = [SOURCE_DOMAINS[source] for source in request.preferred_sources if source in SOURCE_DOMAINS]
+def _preferred_domains(request: BriefRequest, preferences: PreferencePatch) -> list[str]:
+    preferred_sources = list(
+        dict.fromkeys([*request.preferred_sources, *preferences.research.preferred_sources])
+    )
+    domains = [SOURCE_DOMAINS[source] for source in preferred_sources if source in SOURCE_DOMAINS]
     for domain in request.custom_domains:
         if domain not in domains:
             domains.append(domain)
@@ -147,13 +151,18 @@ async def create_plan(request: BriefRequest) -> tuple[ResearchPlan, list[str]]:
         ]
 
     await require_live_model()
+    memory_version, preferences = active_preferences()
     prompt = f"""
 Create a broad financial-news coverage plan for this request.
 
 {request.model_dump_json(indent=2)}
 
+Active approved research preferences:
+{preferences.research.model_dump_json(indent=2)}
+
 Return exactly three sections. Favor sections likely to have meaningful current coverage. Keep queries
-short, general, and free of dates. Preferred sources are ranking directions, not hard filters.
+short, general, and free of dates. Avoid excluded topics. Preferred sources are ranking directions,
+not hard filters.
 """
     response = await planner_agent().arun(
         prompt,
@@ -161,10 +170,13 @@ short, general, and free of dates. Preferred sources are ranking directions, not
         session_id=f"plan-{uuid4()}",
     )
     plan = _coerce(ResearchPlan, response.content)
-    return plan, [
+    trace = [
         f"Planner used local model {OLLAMA_MODEL}.",
         f"Planner returned {len(plan.sections)} broad coverage sections.",
     ]
+    if memory_version:
+        trace.insert(0, f"Planner loaded approved research memory v{memory_version}.")
+    return plan, trace
 
 
 async def _run_search_ladder(request: BriefRequest, section: SectionPlan) -> list[dict]:
@@ -208,9 +220,21 @@ async def _run_search_ladder(request: BriefRequest, section: SectionPlan) -> lis
 async def _research_live_section(
     request: BriefRequest,
     section: SectionPlan,
+    preferences: PreferencePatch,
 ) -> SectionResearchResult:
-    domains = _preferred_domains(request)
+    domains = _preferred_domains(request, preferences)
     search_results = await _run_search_ladder(request, section)
+
+    excluded_topics = [topic.strip().lower() for topic in preferences.research.excluded_topics if topic.strip()]
+    if excluded_topics:
+        search_results = [
+            item
+            for item in search_results
+            if not any(
+                topic in f"{item.get('title', '')} {item.get('body', '')} {item.get('description', '')}".lower()
+                for topic in excluded_topics
+            )
+        ]
 
     if domains and not request.broader_web:
         search_results = [
@@ -277,14 +301,18 @@ async def research_sections(
         ]
 
     await require_live_model()
+    memory_version, preferences = active_preferences()
     results = await asyncio.gather(
-        *[_research_live_section(request, section) for section in plan.sections]
+        *[_research_live_section(request, section, preferences) for section in plan.sections]
     )
     candidate_count = sum(len(section.candidates) for section in results)
-    return ResearchBundle(sections=results), [
+    trace = [
         "Researcher ran 3 independent search ladders in parallel.",
         f"Public search returned {candidate_count} dated articles after URL validation.",
     ]
+    if memory_version:
+        trace.insert(0, f"Researcher applied source and exclusion memory v{memory_version}.")
+    return ResearchBundle(sections=results), trace
 
 
 def _source_catalog(research: ResearchBundle) -> tuple[list[SourceRecord], dict[str, str]]:
@@ -342,6 +370,7 @@ async def edit_briefing(
         ]
 
     await require_live_model()
+    memory_version, preferences = active_preferences()
     sources, url_to_id = _source_catalog(research)
     if not sources:
         raise LiveModeUnavailable(
@@ -361,6 +390,9 @@ Plan:
 Evidence with source IDs:
 {json.dumps(evidence, indent=2)}
 
+Active approved editorial preferences:
+{preferences.editorial.model_dump_json(indent=2)}
+
 Requirements:
 - Lead with a short executive summary and 3 to 5 sourced takeaways.
 - Return exactly 3 briefing sections.
@@ -368,7 +400,8 @@ Requirements:
 - Add one coverage note when a section has fewer than 3 supported developments.
 - Include upcoming dated events only when the evidence supports them.
 - Reference source IDs on every takeaway, section, development, and event.
-- Use direct language for a finance newcomer. Do not use em dashes.
+- Apply the approved tone, implication order, and jargon preference.
+- Use direct language for a financial analyst. Do not use em dashes.
 - Do not create or alter sources, URLs, dates, facts, or source IDs.
 """
     response = await editor_agent().arun(
@@ -495,10 +528,13 @@ Requirements:
     )
 
     briefing = _coerce(AnalystBriefing, briefing)
-    return briefing, [
+    trace = [
         f"Writer used local model {OLLAMA_MODEL}.",
         f"Code retained {len(cited_sources)} cited source links with publication dates.",
     ]
+    if memory_version:
+        trace.insert(0, f"Writer applied editorial memory v{memory_version}.")
+    return briefing, trace
 
 
 async def propose_preferences(
@@ -512,7 +548,7 @@ async def propose_preferences(
         patch = current.model_copy(deep=True)
         patch.editorial.lead_with_implication = "implication" in lowered or "lead with" in lowered
         if "direct" in lowered:
-            patch.editorial.tone = "direct, calm, beginner-friendly"
+            patch.editorial.tone = "direct, professional, analyst-oriented"
         if "bn" in lowered or "$" in feedback:
             patch.display.currency_style = "$4.2bn"
         return patch, [
@@ -538,22 +574,3 @@ Reviewed briefing: {briefing.model_dump_json(indent=2)}
         f"Feedback Agent used local model {OLLAMA_MODEL}.",
         "The preference proposal is waiting for human approval.",
     ]
-
-
-def load_memory() -> dict:
-    if not MEMORY_FILE.exists():
-        return {"version": 0, "preferences": PreferencePatch().model_dump(), "approved_at": None}
-    return json.loads(MEMORY_FILE.read_text(encoding="utf-8"))
-
-
-def approve_memory(patch: PreferencePatch) -> dict:
-    current = load_memory()
-    saved = {
-        "version": int(current.get("version", 0)) + 1,
-        "preferences": patch.model_dump(),
-        "approved_at": datetime.now(UTC).isoformat(),
-    }
-    temporary = MEMORY_FILE.with_suffix(".tmp")
-    temporary.write_text(json.dumps(saved, indent=2) + "\n", encoding="utf-8")
-    temporary.replace(MEMORY_FILE)
-    return saved

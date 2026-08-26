@@ -6,6 +6,7 @@ const state = {
   briefing: null,
   proposal: null,
   preferences: null,
+  memory: null,
   busy: false,
 };
 
@@ -44,11 +45,13 @@ async function api(path, payload) {
 }
 
 function requestPayload() {
+  const selectedSources = $$('.source-options input:checked').map((input) => input.value);
+  const rememberedSources = state.preferences?.research?.preferred_sources || [];
   return {
     focus: state.mode === "sample" ? "global-markets" : $("#focus").value,
     question: state.mode === "sample" ? sampleQuestion : $("#question").value.trim(),
     time_window_days: Number($("#time-window").value),
-    preferred_sources: $$('.source-options input:checked').map((input) => input.value),
+    preferred_sources: [...new Set([...selectedSources, ...rememberedSources])],
     custom_domains: $("#custom-domains").value.split(",").map((item) => item.trim()).filter(Boolean),
     broader_web: $("#broader-web").checked,
     mode: state.mode,
@@ -119,6 +122,9 @@ async function plannerStage() {
     state.plan = response.result;
     $("#planner-output").innerHTML = state.plan.sections
       .map((section, index) => `<span>${index + 1}. ${escapeHtml(section.title)}</span>`).join("");
+    if (state.memory?.active_version) {
+      $("#planner-output").insertAdjacentHTML("beforeend", `<span>Memory v${state.memory.active_version}</span>`);
+    }
     addTrace(response.trace);
     setStage("planner", "complete");
   } catch (error) {
@@ -137,7 +143,7 @@ async function researcherStage() {
     const response = await api("/api/research", { request: requestPayload(), plan: state.plan });
     state.research = response.result;
     const count = state.research.sections.reduce((total, section) => total + section.candidates.length, 0);
-    $("#researcher-output").innerHTML = `<span>3 searches</span><span>${count} dated articles</span><span>Links validated</span>`;
+    $("#researcher-output").innerHTML = `<span>3 searches</span><span>${count} dated articles</span><span>Links validated</span>${state.memory?.active_version ? `<span>Memory v${state.memory.active_version}</span>` : ""}`;
     addTrace(response.trace);
     setStage("researcher", "complete");
   } catch (error) {
@@ -160,7 +166,7 @@ async function editorStage() {
     });
     state.briefing = response.result;
     const itemCount = state.briefing.sections.reduce((total, section) => total + section.items.length, 0);
-    $("#editor-output").innerHTML = `<span>Executive summary</span><span>${itemCount} developments</span><span>${state.briefing.sources.length} sources</span>`;
+    $("#editor-output").innerHTML = `<span>Executive summary</span><span>${itemCount} developments</span><span>${state.briefing.sources.length} sources</span>${state.memory?.active_version ? `<span>Memory v${state.memory.active_version}</span>` : ""}`;
     addTrace(response.trace);
     setStage("editor", "complete");
     renderBriefing();
@@ -237,7 +243,15 @@ function formatDate(value) {
   if (!value) return "Date unavailable";
   const date = new Date(value.includes("T") ? value : `${value}T12:00:00Z`);
   if (Number.isNaN(date.getTime())) return value;
-  return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" }).format(date);
+  const style = state.preferences?.display?.date_style || "August 25, 2026";
+  if (style.includes("25 Aug")) {
+    return new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "short", day: "numeric" }).format(date);
+  }
+  return new Intl.DateTimeFormat("en-US", {
+    year: "numeric",
+    month: style.includes("August") ? "long" : "short",
+    day: "numeric",
+  }).format(date);
 }
 
 function sourceMap() {
@@ -360,24 +374,131 @@ function renderBriefing() {
 
 function renderProposal() {
   if (!state.proposal) return;
+  const fields = [
+    ["Research", "Preferred sources", "research", "preferred_sources"],
+    ["Research", "Excluded topics", "research", "excluded_topics"],
+    ["Editorial", "Tone", "editorial", "tone"],
+    ["Editorial", "Lead with implication", "editorial", "lead_with_implication"],
+    ["Editorial", "Jargon level", "editorial", "jargon_level"],
+    ["Display", "Currency style", "display", "currency_style"],
+    ["Display", "Date style", "display", "date_style"],
+  ];
+  const changes = fields.filter(([, , group, key]) => {
+    return JSON.stringify(state.preferences?.[group]?.[key]) !== JSON.stringify(state.proposal[group][key]);
+  });
+  const changeMarkup = changes.length
+    ? changes.map(([groupLabel, label, group, key]) => `
+        <div class="proposal-change">
+          <b>${escapeHtml(groupLabel)} · ${escapeHtml(label)}</b>
+          <span class="old-value">${escapeHtml(displayValue(state.preferences?.[group]?.[key]))}</span>
+          <span class="change-arrow">to</span>
+          <span class="new-value">${escapeHtml(displayValue(state.proposal[group][key]))}</span>
+        </div>
+      `).join("")
+    : '<p class="no-change">The feedback did not create a durable preference change.</p>';
   $("#proposal").innerHTML = `
-    <div><b>Research</b>${escapeHtml((state.proposal.research.preferred_sources || []).join(", ") || "No source change")}</div>
-    <div><b>Editorial</b>${escapeHtml(state.proposal.editorial.tone)} · lead with implication: ${state.proposal.editorial.lead_with_implication}</div>
-    <div><b>Display</b>${escapeHtml(state.proposal.display.currency_style)}</div>
-    <button id="approve-memory" type="button">Approve and save preferences</button>
+    <div class="proposal-heading"><strong>Proposed memory update</strong><span>${changes.length} changed field${changes.length === 1 ? "" : "s"}</span></div>
+    ${changeMarkup}
+    <div class="proposal-actions">
+      <button id="approve-memory" type="button" ${changes.length ? "" : "disabled"}>Approve as new version</button>
+      <button id="reject-memory" class="secondary-button" type="button">Reject proposal</button>
+    </div>
   `;
   $("#approve-memory").addEventListener("click", approveMemory);
+  $("#reject-memory").addEventListener("click", rejectProposal);
 }
 
 async function approveMemory() {
   if (!state.proposal) return;
-  const saved = await api("/api/memory/approve", { patch: state.proposal });
+  const saved = await api("/api/memory/approve", {
+    patch: state.proposal,
+    feedback: $("#feedback").value.trim() || "Approved preference update",
+  });
+  state.memory = saved;
   state.preferences = saved.preferences;
-  $("#memory-state").textContent = `Preferences v${saved.version} approved at ${new Date(saved.approved_at).toLocaleString()}.`;
   $("#proposal").innerHTML = "";
   state.proposal = null;
   addTrace([`Human approved preferences v${saved.version}.`]);
+  syncMemoryToInputs();
+  renderMemory();
   renderBriefing();
+}
+
+function rejectProposal() {
+  state.proposal = null;
+  $("#proposal").innerHTML = "";
+  $("#feedback-output").innerHTML = "<span>Proposal rejected</span><span>Memory unchanged</span>";
+  addTrace(["Human rejected the proposal. Approved memory did not change."]);
+}
+
+function displayValue(value) {
+  if (Array.isArray(value)) return value.length ? value.join(", ") : "None";
+  if (typeof value === "boolean") return value ? "Yes" : "No";
+  if (value === undefined || value === null || value === "") return "None";
+  return String(value);
+}
+
+function memoryGroup(title, preferences) {
+  const rows = title === "Research"
+    ? [["Preferred sources", preferences.preferred_sources], ["Excluded topics", preferences.excluded_topics]]
+    : title === "Editorial"
+      ? [["Tone", preferences.tone], ["Lead with implication", preferences.lead_with_implication], ["Jargon", preferences.jargon_level]]
+      : [["Currency", preferences.currency_style], ["Dates", preferences.date_style]];
+  return `<section class="memory-group"><h4>${title}</h4>${rows.map(([label, value]) => `
+    <div><span>${escapeHtml(label)}</span><strong>${escapeHtml(displayValue(value))}</strong></div>
+  `).join("")}</section>`;
+}
+
+function renderMemory() {
+  const memory = state.memory;
+  const preferences = state.preferences;
+  if (!preferences) return;
+
+  $("#memory-version").textContent = memory?.active_version ? `Active v${memory.active_version}` : "Defaults";
+  $("#active-memory").innerHTML = `
+    ${memoryGroup("Research", preferences.research)}
+    ${memoryGroup("Editorial", preferences.editorial)}
+    ${memoryGroup("Display", preferences.display)}
+  `;
+
+  const history = memory?.history || [];
+  $("#memory-history").innerHTML = history.length ? history.map((entry) => `
+    <article class="memory-version-card ${entry.version === memory.active_version ? "active" : ""}">
+      <div class="memory-version-title">
+        <strong>Version ${entry.version}</strong>
+        ${entry.version === memory.active_version ? "<span>Active</span>" : `<button type="button" data-activate-memory="${entry.version}">Make active</button>`}
+      </div>
+      <time>${escapeHtml(formatDate(entry.approved_at))}</time>
+      <p>${escapeHtml(entry.feedback || "Approved preference update")}</p>
+      <ul>${(entry.changes || []).map((change) => `
+        <li><b>${escapeHtml(change.label)}</b><span>${escapeHtml(displayValue(change.before))} to ${escapeHtml(displayValue(change.after))}</span></li>
+      `).join("") || "<li><span>No field changes recorded.</span></li>"}</ul>
+    </article>
+  `).join("") : '<p class="empty-memory-history">Approve feedback to create the first memory version.</p>';
+
+  $$('[data-activate-memory]').forEach((button) => {
+    button.addEventListener("click", () => activateMemory(Number(button.dataset.activateMemory)));
+  });
+  $("#memory-state").textContent = memory?.active_version
+    ? `Version ${memory.active_version} is active. ${history.length} approved version${history.length === 1 ? "" : "s"} stored locally.`
+    : "Default preferences are active. No approved local versions yet.";
+}
+
+async function activateMemory(version) {
+  const memory = await api("/api/memory/activate", { version });
+  state.memory = memory;
+  state.preferences = memory.preferences;
+  syncMemoryToInputs();
+  renderMemory();
+  renderBriefing();
+  addTrace([`Human activated approved preferences v${version}.`]);
+}
+
+function syncMemoryToInputs() {
+  const remembered = new Set(state.preferences?.research?.preferred_sources || []);
+  $$('.source-options input').forEach((input) => {
+    if (remembered.has(input.value)) input.checked = true;
+  });
 }
 
 function lockSampleInputs(locked) {
@@ -438,10 +559,12 @@ async function loadHealth() {
 async function loadMemory() {
   try {
     const memory = await api("/api/memory");
+    state.memory = memory;
     state.preferences = memory.preferences;
-    if (memory.version) $("#memory-state").textContent = `Preferences v${memory.version} are active.`;
+    syncMemoryToInputs();
+    renderMemory();
   } catch (error) {
-    // Default preferences are sufficient when no saved file is available.
+    $("#memory-state").textContent = "Memory is unavailable. Default preferences will be used.";
   }
 }
 

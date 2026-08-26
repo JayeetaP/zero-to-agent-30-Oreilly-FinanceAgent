@@ -9,7 +9,8 @@ load_dotenv(ROOT / ".env")
 
 FRONTEND_DIR = ROOT / "frontend"
 SAMPLE_FILE = ROOT / "data" / "sample_run.json"
-MEMORY_FILE = ROOT / "data" / "memory.local.json"
+MEMORY_DB_FILE = ROOT / "data" / "memory.db"
+LEGACY_MEMORY_FILE = ROOT / "data" / "memory.local.json"
 
 OLLAMA_HOST = os.getenv("OLLAMA_HOST", "http://127.0.0.1:11434").rstrip("/")
 OLLAMA_MODEL = os.getenv("OLLAMA_MODEL", "qwen3.5:9b")

@@ -138,7 +138,7 @@ class ResearchPreferences(BaseModel):
 
 
 class EditorialPreferences(BaseModel):
-    tone: str = "direct, calm, beginner-friendly"
+    tone: str = "direct, professional, analyst-oriented"
     lead_with_implication: bool = False
     jargon_level: str = "define unfamiliar terms"
 
@@ -174,3 +174,8 @@ class FeedbackRequest(BaseModel):
 
 class ApprovalRequest(BaseModel):
     patch: PreferencePatch
+    feedback: str = Field(default="Approved preference update", max_length=1000)
+
+
+class MemoryActivateRequest(BaseModel):
+    version: int = Field(ge=1)

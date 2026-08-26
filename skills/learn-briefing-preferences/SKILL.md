@@ -2,7 +2,7 @@
 
 ## Owner
 
-Feedback and Preferences Agent
+Feedback and Memory Agent
 
 ## Purpose
 
@@ -27,4 +27,5 @@ A `PreferencePatch` with independent optional fields for research, editorial, an
 5. Never write preferences directly.
 6. Persist a new version only after the UI records explicit approval.
 
-Skills are never rewritten by feedback.
+After approval, the application writes the typed patch through Agno `MemoryManager` as a `UserMemory`
+record. The agent does not perform this write itself. Skills are never rewritten by feedback.

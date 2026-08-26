@@ -3,7 +3,7 @@
 Briefing Lab is a small financial-news agent demo that runs on your computer. It shows how a planner,
 researcher, writer, and feedback agent turn current public news into a cited briefing document.
 
-The project is designed for workshops and first-time agent builders:
+The project is designed as a clear workshop example for financial analysts and can be customized for any domain:
 
 - one Python process serves the API and browser UI;
 - plain HTML, CSS, and JavaScript with no frontend build;
@@ -11,9 +11,10 @@ The project is designed for workshops and first-time agent builders:
 - a local open model through Ollama, with no paid model API key;
 - current-news discovery through public DDGS metasearch;
 - a dated Sample Run made from real public articles;
-- human approval before presentation preferences are saved.
+- human approval before versioned preferences are saved in Agno memory.
 
-There is no React, Node server, Docker, database, `.openai` folder, Wrangler, or Vinext setup.
+There is no React, Node server, Docker, database server, `.openai` folder, Wrangler, or Vinext setup.
+Agno stores local memory in one gitignored SQLite file.
 
 ## What the demo teaches
 
@@ -31,6 +32,9 @@ Briefing Writer        creates the executive summary and sourced briefing
         |
         v
 Feedback Agent         proposes tone and display preferences for approval
+        |
+        v
+Agno Memory            versions approved preferences and shares the active version
 ```
 
 The UI makes every stage runnable on its own and displays the structured handoff between stages. It
@@ -45,6 +49,7 @@ briefing-lab/
 ├── skills/                   # one readable playbook for each agent role
 ├── rules/                    # evidence, briefing, and editorial contracts
 ├── data/sample_run.json      # real, dated, sourced workshop fallback
+├── data/memory.db            # local Agno memory, created at runtime and ignored by Git
 ├── memory/                   # default presentation preferences
 ├── docs/architecture.md      # short technical architecture reference
 ├── tests/                    # evidence and workflow contract tests
@@ -133,12 +138,17 @@ one coverage note instead.
 Each agent has a Markdown skill in `skills/`. Shared constraints live in `rules/`. The backend loads
 these files at runtime, so workshop participants can change agent behavior without rewriting Python.
 
-Feedback follows a human approval boundary:
+Feedback follows a human approval boundary and uses Agno's native memory components:
 
 1. The Feedback Agent proposes a preference patch.
-2. The UI shows the proposed tone, currency, date, and source changes.
+2. The UI shows each proposed value beside the current value.
 3. Nothing is saved until the user approves it.
-4. Approved preferences are written to ignored local file `data/memory.local.json`.
+4. Agno `MemoryManager` writes an append-only approved version plus one active version to `data/memory.db`.
+5. The UI shows active research, editorial, and display memory, the complete approval history, and a control to reactivate an earlier version.
+
+The Planner and Researcher use source and exclusion preferences. The Writer uses tone, implication
+order, and jargon preferences. The browser renderer applies currency and date formatting. Memory may
+change presentation and coverage direction, but it cannot change source evidence.
 
 ## API
 
@@ -148,6 +158,8 @@ POST /api/research
 POST /api/edit
 POST /api/feedback
 POST /api/memory/approve
+POST /api/memory/activate
+GET  /api/memory
 GET  /api/health
 ```
 
@@ -168,7 +180,9 @@ writing rules, and approval boundary.
 | Tool | Role in this project |
 | --- | --- |
 | [Python](https://www.python.org/) | Application runtime |
-| [Agno](https://docs.agno.com/) | Agent roles, local model integration, tools, and structured responses |
+| [Agno](https://docs.agno.com/) | Agent roles, local model integration, tools, structured responses, and memory |
+| [Agno Memory](https://docs.agno.com/memory/overview) | `MemoryManager`, `UserMemory`, and shared user memory concepts |
+| [Agno Memory Cookbooks](https://github.com/agno-agi/agno/tree/main/cookbook/11_memory) | Persistent and shared-memory implementation examples |
 | [Agno Ollama tool-use example](https://docs.agno.com/examples/models/ollama/chat/tool-use) | Reference pattern for an Agno agent using Ollama and `WebSearchTools` |
 | [Ollama](https://ollama.com/) | Runs the language model locally |
 | [Qwen 3.5](https://ollama.com/library/qwen3.5) | Default open model family |
@@ -178,6 +192,7 @@ writing rules, and approval boundary.
 | [Uvicorn](https://www.uvicorn.org/) | Local ASGI server |
 | [HTTPX](https://www.python-httpx.org/) | Ollama health checks and API testing |
 | [python-dotenv](https://saurabh-kumar.com/python-dotenv/) | Optional local environment configuration |
+| [SQLAlchemy](https://www.sqlalchemy.org/) | Local SQLite persistence used by Agno memory |
 | [pytest](https://docs.pytest.org/en/stable/) | Automated workflow and evidence-contract tests |
 | [MDN Web Docs](https://developer.mozilla.org/en-US/docs/Web) | HTML, CSS, and browser JavaScript reference |
 

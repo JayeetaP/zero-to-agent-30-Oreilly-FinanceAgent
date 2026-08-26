@@ -80,7 +80,7 @@ def editor_agent() -> Agent:
 def feedback_agent() -> Agent:
     return Agent(
         id="feedback-memory",
-        name="Feedback and Preferences Agent",
+        name="Feedback and Memory Agent",
         model=local_model(),
         instructions=[
             load_skill("learn-briefing-preferences"),

@@ -8,14 +8,14 @@ from .models import (
     BriefRequest,
     EditorRequest,
     FeedbackRequest,
+    MemoryActivateRequest,
     ResearchRequest,
 )
+from .memory import activate_memory, approve_memory, load_memory
 from .workflow import (
     LiveModeUnavailable,
-    approve_memory,
     create_plan,
     edit_briefing,
-    load_memory,
     ollama_status,
     propose_preferences,
     research_sections,
@@ -98,7 +98,15 @@ async def memory() -> dict:
 
 @app.post("/api/memory/approve")
 async def approve(payload: ApprovalRequest) -> dict:
-    return approve_memory(payload.patch)
+    return approve_memory(payload.patch, payload.feedback)
+
+
+@app.post("/api/memory/activate")
+async def activate(payload: MemoryActivateRequest) -> dict:
+    try:
+        return activate_memory(payload.version)
+    except ValueError as error:
+        raise HTTPException(status_code=404, detail=str(error)) from error
 
 
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")

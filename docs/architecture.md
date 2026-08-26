@@ -15,6 +15,8 @@ FastAPI at localhost:8000
           |
           +-- Agno Agent -> local Ollama model
                           -> DDGS public search tool
+          |
+          +-- Agno MemoryManager -> local SQLite file
 ```
 
 ## Visible workflow
@@ -26,7 +28,8 @@ BriefRequest
   -> Briefing Writer (executive summary, sections, sources)
   -> Feedback proposal
   -> human approval
-  -> local presentation preferences
+  -> versioned Agno user memory
+  -> active preferences shared with the next run
 ```
 
 The business order is fixed. Agentic decisions happen inside planning, evidence selection,
@@ -51,4 +54,12 @@ Both modes return the same Pydantic models.
 - **Plain Python:** workflow order, concurrent section research, URL validation, source IDs, and approval.
 - **Skills:** agent playbooks stored in Git.
 - **Rules:** evidence, document-shape, and writing boundaries.
-- **Preferences:** approved presentation choices written to a gitignored JSON file.
+- **MemoryManager and UserMemory:** approved preference versions stored through Agno.
+- **SQLite:** one gitignored local file, with no separate database server.
+
+## Memory boundary
+
+The application does not enable automatic or agentic memory updates. The Feedback Agent returns a
+typed proposal, the user approves it, and only then does `MemoryManager` save a new version. One stable
+record points to the active version and append-only records preserve the approval history. Research,
+editorial, and display preferences feed the relevant stages, but source validation remains code-owned.

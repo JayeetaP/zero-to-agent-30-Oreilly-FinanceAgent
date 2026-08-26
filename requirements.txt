@@ -9,4 +9,5 @@ openai>=1.106,<3
 pydantic>=2.11,<3
 python-dotenv>=1.1,<2
 pytest>=8,<10
+sqlalchemy>=2,<3
 uvicorn>=0.35,<1
