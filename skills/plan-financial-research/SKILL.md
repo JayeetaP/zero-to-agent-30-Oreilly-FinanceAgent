@@ -2,28 +2,30 @@
 
 ## Owner
 
-Planner Agent
+Coverage Planner
 
 ## Purpose
 
-Convert an analyst focus, a news question, a time window, and approved research preferences into exactly three beginner-friendly research sections.
+Turn a broad market focus, research question, and coverage window into exactly three useful sections.
 
 ## Inputs
 
-- focus area;
+- broad finance topic;
 - natural-language question;
-- time window;
+- coverage window;
 - source directions;
 - approved research preferences.
 
 ## Output
 
-A `ResearchPlan` with exactly three `SectionPlan` objects. Each section has a title, purpose, and one to three search queries.
+A `ResearchPlan` with exactly three `SectionPlan` objects. Each section has a plain title, a clear
+purpose, and one to three short search queries.
 
 ## Method
 
-1. Identify the decision context in the user's question.
-2. Separate company/deal evidence from broader market or policy context.
-3. Choose three sections that overlap as little as possible.
-4. Write plain titles a finance newcomer can understand.
-5. Return structured output; do not search the web or draft the briefing.
+1. Identify the market decision or understanding the question should support.
+2. Choose broad areas likely to have meaningful current coverage.
+3. Separate market context, company or deal catalysts, and forward risks where useful.
+4. Keep the sections distinct without forcing narrow subtopics.
+5. Write short topic queries without dates, months, or source-site filters.
+6. Return the plan only. Do not search or draft the briefing.

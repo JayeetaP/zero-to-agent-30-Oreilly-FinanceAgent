@@ -2,28 +2,30 @@
 
 ## Owner
 
-News Research Agent
+News Researcher
 
 ## Purpose
 
-Find recent evidence for one planned section. The workflow reuses this skill across all three sections and may run those searches in parallel.
+Evaluate current evidence for one planned section. The workflow runs the three sections independently.
 
 ## Inputs
 
 - one `SectionPlan`;
-- time window;
+- public search results from a short query ladder;
+- coverage window;
 - preferred domains;
-- broader-web permission.
+- permission to include other public sources.
 
 ## Output
 
-Up to five `NewsCandidate` objects with title, canonical URL, source, publication date, evidence excerpt, and relevance explanation.
+Up to eight `NewsCandidate` objects with a headline, source, absolute URL, publication date, evidence
+excerpt, relevance explanation, and next watch point.
 
 ## Method
 
-1. Search preferred domains first.
-2. Broaden only when the user allows it and evidence is insufficient.
-3. Open candidate pages and extract dates, URLs, and supporting excerpts.
-4. Group repeated coverage of the same underlying development.
-5. Reject candidates without inspectable support.
-6. Return evidence, not polished briefing copy.
+1. Use only results supplied by the workflow's Agno search tool.
+2. Rank preferred domains first without treating them as automatic endorsements.
+3. Exclude results without a publication date or working absolute URL.
+4. Group repeated coverage of the same underlying event.
+5. Copy source metadata exactly and explain relevance in plain language.
+6. Return evidence records, not briefing prose.

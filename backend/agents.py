@@ -3,12 +3,7 @@ from agno.models.ollama import Ollama
 from agno.tools.websearch import WebSearchTools
 
 from .config import OLLAMA_HOST, OLLAMA_MODEL
-from .models import (
-    AnalystBriefing,
-    PreferencePatch,
-    ResearchPlan,
-    SectionResearchResult,
-)
+from .models import DraftBriefing, PreferencePatch, ResearchPlan
 from .skills import load_rules, load_skill
 
 
@@ -25,11 +20,11 @@ def local_model() -> Ollama:
 def planner_agent() -> Agent:
     return Agent(
         id="planner",
-        name="Planner Agent",
+        name="Coverage Planner",
         model=local_model(),
         instructions=[
             load_skill("plan-financial-research"),
-            "Return exactly three sections. Keep titles understandable to a finance newcomer.",
+            "Return exactly three broad sections. Keep queries short and free of dates.",
         ],
         output_schema=ResearchPlan,
         use_json_mode=True,
@@ -50,36 +45,31 @@ def news_search_tool(time_limit: str) -> WebSearchTools:
     )
 
 
-def research_agent() -> Agent:
+def research_agent(time_limit: str) -> Agent:
     return Agent(
         id="news-researcher",
         name="News Research Agent",
-        model=local_model(),
         instructions=[
             load_skill("search-and-ground-news"),
             load_rules(),
-            "The workflow already ran the search tool. Evaluate only the supplied results. "
-            "Never invent or alter a URL, date, publisher, or excerpt.",
+            "Use the search tool through the fixed query ladder. Preserve source metadata exactly.",
         ],
-        output_schema=SectionResearchResult,
-        use_json_mode=True,
-        add_datetime_to_context=True,
+        tools=[news_search_tool(time_limit)],
         telemetry=False,
-        retries=1,
     )
 
 
 def editor_agent() -> Agent:
     return Agent(
         id="briefing-editor",
-        name="Briefing Editor Agent",
+        name="Briefing Writer",
         model=local_model(),
         instructions=[
             load_skill("write-three-section-briefing"),
             load_rules(),
-            "Use only the supplied research. Preserve source URLs exactly.",
+            "Use only the supplied research. Preserve source IDs, URLs, dates, and publishers exactly.",
         ],
-        output_schema=AnalystBriefing,
+        output_schema=DraftBriefing,
         use_json_mode=True,
         add_datetime_to_context=True,
         telemetry=False,
@@ -90,7 +80,7 @@ def editor_agent() -> Agent:
 def feedback_agent() -> Agent:
     return Agent(
         id="feedback-memory",
-        name="Feedback & Memory Agent",
+        name="Feedback and Preferences Agent",
         model=local_model(),
         instructions=[
             load_skill("learn-briefing-preferences"),

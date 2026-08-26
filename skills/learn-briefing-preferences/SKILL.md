@@ -2,11 +2,11 @@
 
 ## Owner
 
-Feedback & Memory Agent
+Feedback and Preferences Agent
 
 ## Purpose
 
-Translate natural-language feedback into a small, typed preference patch that a human can inspect and approve.
+Translate natural-language feedback into a small, typed presentation preference that a human can inspect and approve.
 
 ## Inputs
 
@@ -23,7 +23,8 @@ A `PreferencePatch` with independent optional fields for research, editorial, an
 1. Extract only durable preferences, not one-off factual corrections.
 2. Keep research, editorial, and display changes separate.
 3. Show the proposed patch in plain language.
-4. Never write memory directly.
-5. Persist a new version only after the UI records explicit approval.
+4. Never change factual evidence or source records.
+5. Never write preferences directly.
+6. Persist a new version only after the UI records explicit approval.
 
 Skills are never rewritten by feedback.

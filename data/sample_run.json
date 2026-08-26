@@ -1,0 +1,293 @@
+{
+  "captured_at": "2026-08-25T22:30:00-04:00",
+  "focus": "global-markets",
+  "question": "What moved global financial markets this week, and what should investors watch next?",
+  "plan": {
+    "sections": [
+      {
+        "title": "Market backdrop",
+        "purpose": "Explain the main forces moving global stocks, bonds, oil, and currencies.",
+        "queries": ["global markets stocks bonds oil", "market backdrop technology yields"]
+      },
+      {
+        "title": "Stocks and company catalysts",
+        "purpose": "Identify the company results and sector events most likely to influence equity markets.",
+        "queries": ["stock market earnings technology", "Nvidia earnings market outlook"]
+      },
+      {
+        "title": "Rates, policy, and the week ahead",
+        "purpose": "Track the policy signals, bond-market moves, and scheduled events that may reset expectations.",
+        "queries": ["Treasury yields central bank policy", "rates dollar week ahead"]
+      }
+    ]
+  },
+  "research": {
+    "sections": [
+      {
+        "section_title": "Market backdrop",
+        "candidates": [
+          {
+            "headline": "Wall Street drifts at the start of a week that could swing stocks and bonds",
+            "source": "Associated Press",
+            "url": "https://apnews.com/article/8ab800029c559c5e751058ac1a8ef932",
+            "publication_date": "2026-08-24",
+            "evidence_excerpt": "The S&P 500 slipped 0.3%, the Dow gained 0.3%, and the Nasdaq fell 0.8% as technology shares weakened ahead of major market events.",
+            "relevance": "The mixed session showed how technology concentration can pull headline indexes in different directions.",
+            "watch_next": "Nvidia results and signals from the bond market."
+          },
+          {
+            "headline": "Global shares dip as technology pressure offsets lower yields and oil",
+            "source": "Reuters via Metrobank Wealth Insights",
+            "url": "https://wealthinsights.metrobank.com.ph/news/global-markets-shares-dip-with-pressure-from-technology-yields-and-oil-fall",
+            "publication_date": "2026-08-25",
+            "evidence_excerpt": "MSCI's global equities gauge fell as weakness in technology stocks outweighed support from lower U.S. Treasury yields and falling oil prices.",
+            "relevance": "The cross-asset moves show that lower yields and energy costs did not fully offset concerns about technology valuations.",
+            "watch_next": "Whether technology earnings restore risk appetite across regions."
+          },
+          {
+            "headline": "Trading Day: Tech, tariffs and Treasuries",
+            "source": "Reuters via Investing.com",
+            "url": "https://www.investing.com/news/economy-news/trading-day-tech-tariffs--treasuries-4874226",
+            "publication_date": "2026-08-24",
+            "evidence_excerpt": "U.S. bond yields fell while technology shares weighed on stocks as investors assessed Treasury buybacks, sanctions, and tariff threats.",
+            "relevance": "Fiscal policy, trade policy, and technology positioning were moving markets at the same time.",
+            "watch_next": "Long-dated Treasury demand and the market response to new tariff details."
+          }
+        ]
+      },
+      {
+        "section_title": "Stocks and company catalysts",
+        "candidates": [
+          {
+            "headline": "Wall Street ends higher as technology rebounds before Nvidia results",
+            "source": "Reuters via MarketScreener",
+            "url": "https://sa.marketscreener.com/news/wall-street-ends-higher-as-tech-rebounds-before-nvidia-results-ce7858d8de8ff427",
+            "publication_date": "2026-08-25",
+            "evidence_excerpt": "U.S. indexes closed higher as technology stocks recovered before Nvidia's results, while lower oil prices and bond yields offered support.",
+            "relevance": "Nvidia's results were positioned as a test of the earnings case supporting the technology-led rally.",
+            "watch_next": "Revenue guidance, AI infrastructure demand, and the response in semiconductor shares."
+          },
+          {
+            "headline": "Stocks pause for Nvidia earnings and policy remarks",
+            "source": "Kiplinger",
+            "url": "https://www.kiplinger.com/investing/stocks/stocks-pause-for-nvidia-earnings-warsh-remarks-stock-market-today",
+            "publication_date": "2026-08-24",
+            "evidence_excerpt": "Stocks were mixed before Nvidia's quarterly report and a scheduled speech by Federal Reserve Chair Kevin Warsh.",
+            "relevance": "The week paired a major corporate earnings catalyst with an important monetary-policy signal.",
+            "watch_next": "Whether earnings expectations and rate expectations move in the same direction."
+          }
+        ],
+        "coverage_note": "Two distinct, well-supported equity developments were available in the captured window."
+      },
+      {
+        "section_title": "Rates, policy, and the week ahead",
+        "candidates": [
+          {
+            "headline": "Dollar little changed as markets assess sanctions and Treasury buybacks",
+            "source": "Reuters via MarketScreener",
+            "url": "https://ae.marketscreener.com/news/dollar-little-changed-as-iran-sanctions-treasury-buybacks-gauged-ce7858d8dd8ef22d",
+            "publication_date": "2026-08-25",
+            "evidence_excerpt": "The dollar was little changed as investors weighed expanded sanctions, Treasury efforts to ease long-term yields, and upcoming rate guidance.",
+            "relevance": "Currency pricing reflected uncertainty about fiscal credibility and the relative direction of central-bank policy.",
+            "watch_next": "The Federal Reserve chair's Jackson Hole remarks and moves in long-dated yields."
+          },
+          {
+            "headline": "Morning Bid: Economic salvos",
+            "source": "Reuters via Investing.com",
+            "url": "https://www.investing.com/news/commodities-news/morning-bid-economic-salvos-4874888",
+            "publication_date": "2026-08-25",
+            "evidence_excerpt": "World markets held steady as investors assessed U.S. sanctions and tariff measures ahead of major macroeconomic events.",
+            "relevance": "Policy announcements were creating headline risk while markets waited for data and central-bank guidance.",
+            "watch_next": "Consumer confidence, housing data, business surveys, and the next inflation signal."
+          },
+          {
+            "headline": "Federal Reserve credibility comes under scrutiny as bond yields rise",
+            "source": "Le Monde",
+            "url": "https://www.lemonde.fr/en/economy/article/2026/08/25/the-credibility-of-the-us-federal-reserve-the-world-s-most-powerful-financial-institution-is-at-risk_6756819_19.html",
+            "publication_date": "2026-08-25",
+            "evidence_excerpt": "The report linked higher long-term yields to inflation concerns, Treasury debt management, and questions about central-bank independence.",
+            "relevance": "Confidence in monetary institutions can affect term premiums, currency pricing, and financial conditions.",
+            "watch_next": "Long-bond auctions, inflation expectations, and voting divisions at the Federal Reserve."
+          }
+        ]
+      }
+    ]
+  },
+  "briefing": {
+    "title": "Global Markets Briefing",
+    "focus": "global-markets",
+    "question": "What moved global financial markets this week, and what should investors watch next?",
+    "generated_at": "2026-08-25T22:30:00-04:00",
+    "coverage_window": "August 19 to August 25, 2026",
+    "mode": "sample",
+    "executive_summary": "Technology shares remained the main source of equity-market pressure and the main near-term catalyst. Lower oil prices and Treasury yields provided support, but investors continued to assess fiscal policy, tariffs, and central-bank credibility. Nvidia's results and Federal Reserve guidance were the clearest scheduled tests for the next market move.",
+    "executive_source_ids": ["S1", "S2", "S3", "S4", "S6"],
+    "key_takeaways": [
+      {
+        "text": "Technology weakness outweighed some of the support from lower oil prices and bond yields.",
+        "source_ids": ["S1", "S2"]
+      },
+      {
+        "text": "Nvidia's results were the next major test of the earnings case behind the technology rally.",
+        "source_ids": ["S4", "S5"]
+      },
+      {
+        "text": "Treasury policy and Federal Reserve guidance kept long-term yields and the dollar in focus.",
+        "source_ids": ["S3", "S6", "S8"]
+      }
+    ],
+    "sections": [
+      {
+        "title": "Market backdrop",
+        "summary": "Global markets began the week with mixed equity performance. Technology shares weakened while lower oil prices and Treasury yields limited the broader decline.",
+        "source_ids": ["S1", "S2", "S3"],
+        "items": [
+          {
+            "headline": "Technology concentration split the major U.S. indexes",
+            "summary": "The S&P 500 and Nasdaq fell while the Dow advanced. Weakness in large technology shares drove much of the difference.",
+            "analyst_implication": "Index-level performance can obscure a narrower change in market leadership.",
+            "watch_next": "Compare technology breadth with equal-weighted and cyclical sectors after Nvidia reports.",
+            "source_ids": ["S1"]
+          },
+          {
+            "headline": "Lower yields and oil did not fully restore risk appetite",
+            "summary": "Global equities lost ground even as U.S. Treasury yields and oil prices declined.",
+            "analyst_implication": "Valuation concerns in technology remained strong enough to offset a more supportive rates and energy backdrop.",
+            "watch_next": "Check whether lower yields persist and begin to support rate-sensitive sectors.",
+            "source_ids": ["S2"]
+          },
+          {
+            "headline": "Policy headlines added another layer of market risk",
+            "summary": "Investors assessed Treasury buybacks, sanctions, and tariff threats alongside company and macroeconomic news.",
+            "analyst_implication": "Several policy channels were influencing stocks, bonds, and currencies at the same time.",
+            "watch_next": "Track long-bond demand and new details on trade measures.",
+            "source_ids": ["S3"]
+          }
+        ]
+      },
+      {
+        "title": "Stocks and company catalysts",
+        "summary": "Technology stocks recovered on August 25, but the durability of the move depended heavily on Nvidia's results and guidance.",
+        "source_ids": ["S4", "S5"],
+        "items": [
+          {
+            "headline": "Nvidia became the immediate test for the technology rally",
+            "summary": "Technology shares rebounded before Nvidia's report after leading the previous session's decline.",
+            "analyst_implication": "A single large company could influence earnings expectations across semiconductors and AI infrastructure.",
+            "watch_next": "Focus on revenue guidance, customer demand, and management's view of AI investment.",
+            "source_ids": ["S4"]
+          },
+          {
+            "headline": "Corporate and policy catalysts arrived in the same week",
+            "summary": "Markets were preparing for Nvidia's earnings and a closely watched speech from the Federal Reserve chair.",
+            "analyst_implication": "Equity valuations could respond to both earnings evidence and the expected path of interest rates.",
+            "watch_next": "Watch whether stronger earnings guidance is offset by higher long-term rate expectations.",
+            "source_ids": ["S5"]
+          }
+        ],
+        "coverage_note": "The captured window contained two distinct equity catalysts with complete source and date information."
+      },
+      {
+        "title": "Rates, policy, and the week ahead",
+        "summary": "Treasury debt management, inflation concerns, and questions about central-bank policy kept long-term yields and currencies central to the outlook.",
+        "source_ids": ["S3", "S6", "S7", "S8"],
+        "items": [
+          {
+            "headline": "The dollar reflected uncertainty about policy direction",
+            "summary": "The dollar held near recent lows while investors assessed Treasury buybacks, sanctions, and the relative direction of central-bank rates.",
+            "analyst_implication": "Currency moves were tied to both fiscal credibility and monetary-policy expectations.",
+            "watch_next": "Follow the dollar against the yen and euro after central-bank remarks.",
+            "source_ids": ["S6"]
+          },
+          {
+            "headline": "Markets waited for a clearer macro signal",
+            "summary": "Investors faced a busy calendar of confidence, housing, business-survey, inflation, and central-bank events.",
+            "analyst_implication": "Incoming data could quickly change the expected path of rates after a policy-heavy start to the week.",
+            "watch_next": "Compare inflation-sensitive data with changes in two-year and long-term yields.",
+            "source_ids": ["S7"]
+          },
+          {
+            "headline": "Central-bank credibility became a bond-market issue",
+            "summary": "Higher long-term yields raised questions about inflation control, debt management, and Federal Reserve independence.",
+            "analyst_implication": "A higher term premium can tighten financial conditions even without an immediate policy-rate change.",
+            "watch_next": "Monitor long-bond auctions, inflation expectations, and Federal Reserve voting divisions.",
+            "source_ids": ["S8"]
+          }
+        ]
+      }
+    ],
+    "upcoming_events": [
+      {
+        "date": "2026-08-26",
+        "event": "Nvidia quarterly results",
+        "why_it_matters": "The report will test earnings expectations across technology and AI infrastructure.",
+        "source_ids": ["S4", "S5"]
+      },
+      {
+        "date": "2026-08-28",
+        "event": "Federal Reserve Chair Kevin Warsh speaks at Jackson Hole",
+        "why_it_matters": "Markets will look for guidance on inflation, rates, and the bond-market outlook.",
+        "source_ids": ["S5", "S6"]
+      }
+    ],
+    "sources": [
+      {
+        "id": "S1",
+        "publisher": "Associated Press",
+        "title": "Wall Street drifts at the start of a week that could swing stocks and bonds",
+        "publication_date": "2026-08-24",
+        "url": "https://apnews.com/article/8ab800029c559c5e751058ac1a8ef932"
+      },
+      {
+        "id": "S2",
+        "publisher": "Reuters via Metrobank Wealth Insights",
+        "title": "Global shares dip as technology pressure offsets lower yields and oil",
+        "publication_date": "2026-08-25",
+        "url": "https://wealthinsights.metrobank.com.ph/news/global-markets-shares-dip-with-pressure-from-technology-yields-and-oil-fall"
+      },
+      {
+        "id": "S3",
+        "publisher": "Reuters via Investing.com",
+        "title": "Trading Day: Tech, tariffs and Treasuries",
+        "publication_date": "2026-08-24",
+        "url": "https://www.investing.com/news/economy-news/trading-day-tech-tariffs--treasuries-4874226"
+      },
+      {
+        "id": "S4",
+        "publisher": "Reuters via MarketScreener",
+        "title": "Wall Street ends higher as technology rebounds before Nvidia results",
+        "publication_date": "2026-08-25",
+        "url": "https://sa.marketscreener.com/news/wall-street-ends-higher-as-tech-rebounds-before-nvidia-results-ce7858d8de8ff427"
+      },
+      {
+        "id": "S5",
+        "publisher": "Kiplinger",
+        "title": "Stocks pause for Nvidia earnings and policy remarks",
+        "publication_date": "2026-08-24",
+        "url": "https://www.kiplinger.com/investing/stocks/stocks-pause-for-nvidia-earnings-warsh-remarks-stock-market-today"
+      },
+      {
+        "id": "S6",
+        "publisher": "Reuters via MarketScreener",
+        "title": "Dollar little changed as markets assess sanctions and Treasury buybacks",
+        "publication_date": "2026-08-25",
+        "url": "https://ae.marketscreener.com/news/dollar-little-changed-as-iran-sanctions-treasury-buybacks-gauged-ce7858d8dd8ef22d"
+      },
+      {
+        "id": "S7",
+        "publisher": "Reuters via Investing.com",
+        "title": "Morning Bid: Economic salvos",
+        "publication_date": "2026-08-25",
+        "url": "https://www.investing.com/news/commodities-news/morning-bid-economic-salvos-4874888"
+      },
+      {
+        "id": "S8",
+        "publisher": "Le Monde",
+        "title": "Federal Reserve credibility comes under scrutiny as bond yields rise",
+        "publication_date": "2026-08-25",
+        "url": "https://www.lemonde.fr/en/economy/article/2026/08/25/the-credibility-of-the-us-federal-reserve-the-world-s-most-powerful-financial-institution-is-at-risk_6756819_19.html"
+      }
+    ],
+    "sample_captured_at": "2026-08-25T22:30:00-04:00"
+  }
+}

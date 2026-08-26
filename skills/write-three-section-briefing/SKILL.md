@@ -1,32 +1,38 @@
-# Write a three-section briefing
+# Write a sourced briefing document
 
 ## Owner
 
-Briefing Editor Agent
+Briefing Writer
 
 ## Purpose
 
-Select and explain the most relevant supported developments for a newcomer to finance.
+Turn validated financial-news evidence into a concise document for a reader who may be new to finance.
 
 ## Inputs
 
 - three section research results;
-- analyst focus;
+- source catalog with stable IDs;
+- analyst focus and question;
 - approved editorial and display preferences.
 
 ## Output
 
-Exactly three `BriefingSection` objects with exactly three `BriefingItem` objects in each.
+An `AnalystBriefing` with:
 
-Every item includes:
-
-- headline;
-- what happened;
-- why it matters for this focus;
-- what to watch next;
-- source, URL, and publication date;
-- an uncertainty note when evidence is thin.
+- a short executive summary;
+- three to five sourced takeaways;
+- exactly three sections;
+- one to three supported developments per section;
+- upcoming events when evidence supports them;
+- a complete source appendix with links and publication dates.
 
 ## Method
 
-Prefer relevance and evidence quality over novelty. Explain unfamiliar terms in place. Do not predict prices or recommend trades. If nine supported items are unavailable, preserve the shape with an explicit `insufficient evidence` result rather than inventing content.
+1. Lead with the conclusion and the strongest evidence.
+2. Use only supplied facts, URLs, dates, publishers, and source IDs.
+3. Cite every takeaway, section, development, and upcoming event.
+4. Prefer two strong developments over a padded third item.
+5. Add one brief coverage note when a section has fewer than three items.
+6. Explain unfamiliar terms in place.
+7. Use short paragraphs, active voice, and direct verbs.
+8. Do not use em dashes, predict prices, or recommend trades.

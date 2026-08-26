@@ -1,5 +1,6 @@
 const state = {
-  mode: "fixture",
+  mode: "live",
+  liveReady: false,
   plan: null,
   research: null,
   briefing: null,
@@ -9,11 +10,15 @@ const state = {
 };
 
 const questions = {
-  sustainable: "What material sustainability developments happened in the last seven days?",
-  consumer: "What changed in consumer demand, pricing, and company outlooks this week?",
-  "private-credit": "What should a private-credit analyst investigate from the last seven days?",
+  "global-markets": "What moved global financial markets this week, and what should investors watch next?",
+  stocks: "Which company, earnings, valuation, and sector developments mattered most this week?",
+  "private-credit": "What changed in direct lending, deal activity, fundraising, borrower stress, and credit terms?",
+  "rates-bonds": "Which economic data, central-bank decisions, and market moves changed the rates outlook?",
+  "banking-deals": "What significant banking, financing, M&A, IPO, and regulatory developments occurred?",
+  "commodities-currencies": "What moved commodities, currencies, and digital assets, and why does it matter?",
 };
 
+const sampleQuestion = questions["global-markets"];
 const stages = ["planner", "researcher", "editor", "feedback"];
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
@@ -40,8 +45,8 @@ async function api(path, payload) {
 
 function requestPayload() {
   return {
-    focus: $("#focus").value,
-    question: $("#question").value.trim(),
+    focus: state.mode === "sample" ? "global-markets" : $("#focus").value,
+    question: state.mode === "sample" ? sampleQuestion : $("#question").value.trim(),
     time_window_days: Number($("#time-window").value),
     preferred_sources: $$('.source-options input:checked').map((input) => input.value),
     custom_domains: $("#custom-domains").value.split(",").map((item) => item.trim()).filter(Boolean),
@@ -91,17 +96,24 @@ function resetFrom(stage) {
   }
 }
 
+function applyAvailability() {
+  const liveUnavailable = state.mode === "live" && !state.liveReady;
+  $("#run-all").disabled = state.busy || liveUnavailable;
+  $$('[data-run]').forEach((button) => {
+    button.disabled = state.busy || liveUnavailable || (button.dataset.run === "feedback" && !state.briefing);
+  });
+  $("#run-feedback").disabled = state.busy || liveUnavailable || !state.briefing;
+}
+
 function setBusy(busy) {
   state.busy = busy;
-  $("#run-all").disabled = busy;
-  $("#run-feedback").disabled = busy || !state.briefing;
-  $$('[data-run]').forEach((button) => { button.disabled = busy; });
+  applyAvailability();
 }
 
 async function plannerStage() {
   resetFrom("planner");
   setStage("planner", "running");
-  addTrace([`Planner started in ${state.mode} mode.`]);
+  addTrace([`Coverage Planner started in ${state.mode} mode.`]);
   try {
     const response = await api("/api/plan", requestPayload());
     state.plan = response.result;
@@ -117,15 +129,15 @@ async function plannerStage() {
 }
 
 async function researcherStage() {
-  if (!state.plan) throw new Error("Run the Planner first.");
+  if (!state.plan) throw new Error("Run the Coverage Planner first.");
   resetFrom("researcher");
   setStage("researcher", "running");
-  addTrace(["Researcher started 3 section searches."]);
+  addTrace(["News Researcher started 3 independent coverage searches."]);
   try {
     const response = await api("/api/research", { request: requestPayload(), plan: state.plan });
     state.research = response.result;
     const count = state.research.sections.reduce((total, section) => total + section.candidates.length, 0);
-    $("#researcher-output").innerHTML = `<span>3 searches</span><span>${count} candidates</span><span>URLs validated</span>`;
+    $("#researcher-output").innerHTML = `<span>3 searches</span><span>${count} dated articles</span><span>Links validated</span>`;
     addTrace(response.trace);
     setStage("researcher", "complete");
   } catch (error) {
@@ -139,7 +151,7 @@ async function editorStage() {
   if (!state.plan || !state.research) throw new Error("Run the Planner and Researcher first.");
   resetFrom("editor");
   setStage("editor", "running");
-  addTrace(["Editor started from the supplied research bundle."]);
+  addTrace(["Briefing Writer started from the validated research bundle."]);
   try {
     const response = await api("/api/edit", {
       request: requestPayload(),
@@ -147,11 +159,11 @@ async function editorStage() {
       research: state.research,
     });
     state.briefing = response.result;
-    $("#editor-output").innerHTML = "<span>3 sections</span><span>9 items</span><span>3 × 3 validated</span>";
+    const itemCount = state.briefing.sections.reduce((total, section) => total + section.items.length, 0);
+    $("#editor-output").innerHTML = `<span>Executive summary</span><span>${itemCount} developments</span><span>${state.briefing.sources.length} sources</span>`;
     addTrace(response.trace);
     setStage("editor", "complete");
     renderBriefing();
-    $("#run-feedback").disabled = false;
   } catch (error) {
     setStage("editor", "attention");
     addTrace([error.message]);
@@ -160,9 +172,9 @@ async function editorStage() {
 }
 
 async function feedbackStage() {
-  if (!state.briefing) throw new Error("Create a briefing before running feedback.");
+  if (!state.briefing) throw new Error("Create a briefing before reviewing feedback.");
   setStage("feedback", "running");
-  addTrace(["Feedback Agent started. No memory has been written."]);
+  addTrace(["Feedback Agent started. No preference has been saved."]);
   try {
     const response = await api("/api/feedback", {
       mode: state.mode,
@@ -174,7 +186,7 @@ async function feedbackStage() {
     addTrace(response.trace);
     setStage("feedback", "complete");
     renderProposal();
-    $("#feedback-output").innerHTML = "<span>Typed patch ready</span><span>Approval required</span>";
+    $("#feedback-output").innerHTML = "<span>Preference proposal ready</span><span>Approval required</span>";
   } catch (error) {
     setStage("feedback", "attention");
     addTrace([error.message]);
@@ -191,7 +203,7 @@ async function runOne(stage) {
     if (stage === "editor") await editorStage();
     if (stage === "feedback") await feedbackStage();
   } catch (error) {
-    // The stage already displayed the useful error.
+    // The active stage already displayed the useful error.
   } finally {
     setBusy(false);
   }
@@ -200,13 +212,13 @@ async function runOne(stage) {
 async function runAll() {
   if (state.busy) return;
   setBusy(true);
-  clearTrace(`Full ${state.mode} workflow started.`);
+  clearTrace(`${state.mode === "live" ? "Live briefing" : "Sample Run"} started.`);
   try {
     await plannerStage();
     await researcherStage();
     await editorStage();
   } catch (error) {
-    // Stop on the first failed handoff and keep its visible message.
+    // Stop at the first failed handoff and keep its visible message.
   } finally {
     setBusy(false);
   }
@@ -214,41 +226,136 @@ async function runAll() {
 
 function formatted(value) {
   if (state.preferences?.display?.currency_style !== "$4.2bn") return value;
-  return value
+  return String(value)
     .replaceAll("USD 4.2 billion", "$4.2bn")
     .replaceAll("USD 950 million", "$950mn")
     .replaceAll("USD 1.1 billion", "$1.1bn")
     .replaceAll("USD 6.5 billion", "$6.5bn");
 }
 
+function formatDate(value) {
+  if (!value) return "Date unavailable";
+  const date = new Date(value.includes("T") ? value : `${value}T12:00:00Z`);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("en-US", { year: "numeric", month: "short", day: "numeric" }).format(date);
+}
+
+function sourceMap() {
+  return new Map((state.briefing?.sources || []).map((source) => [source.id, source]));
+}
+
+function citationLinks(ids, compact = false) {
+  const sources = sourceMap();
+  const links = ids.map((id) => {
+    const source = sources.get(id);
+    if (!source) return "";
+    const label = compact ? id : `${source.publisher} · ${formatDate(source.publication_date)}`;
+    return `<a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(label)}</a>`;
+  }).filter(Boolean);
+  return links.join("<span>·</span>");
+}
+
 function renderBriefing() {
-  const grid = $("#briefing-grid");
+  const documentNode = $("#briefing-document");
   if (!state.briefing) {
-    grid.innerHTML = "";
+    documentNode.hidden = true;
+    documentNode.innerHTML = "";
     $("#briefing-empty").hidden = false;
-    $("#contract-badge").hidden = true;
+    $("#briefing-badge").hidden = true;
     return;
   }
+
+  const briefing = state.briefing;
+  const itemCount = briefing.sections.reduce((total, section) => total + section.items.length, 0);
+  const publisherCount = new Set(briefing.sources.map((source) => source.publisher)).size;
   $("#briefing-empty").hidden = true;
-  $("#contract-badge").hidden = false;
-  grid.innerHTML = state.briefing.sections.map((section, sectionIndex) => `
-    <article class="briefing-column">
-      <span>Section ${sectionIndex + 1}</span>
-      <h3>${escapeHtml(section.title)}</h3>
-      <p>${escapeHtml(section.purpose)}</p>
-      <div class="news-list">
-        ${section.items.map((item) => `
-          <article class="news-item ${item.status === "insufficient_evidence" ? "insufficient" : ""}">
-            <h4>${escapeHtml(item.headline)}</h4>
-            <p><strong>What happened:</strong> ${escapeHtml(formatted(item.what_happened))}</p>
-            <p><strong>Why it matters:</strong> ${escapeHtml(item.why_it_matters)}</p>
-            <p><strong>Watch next:</strong> ${escapeHtml(item.watch_next)}</p>
-            ${item.url ? `<a href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer">${escapeHtml(item.source)} · ${escapeHtml(item.publication_date || "date unavailable")} ↗</a>` : `<p>${escapeHtml(item.source)}</p>`}
+  $("#briefing-badge").hidden = false;
+  $("#briefing-badge").textContent = `${itemCount} developments · ${briefing.sources.length} sources · ${publisherCount} publishers`;
+  documentNode.hidden = false;
+
+  documentNode.innerHTML = `
+    <header class="document-header">
+      <p class="document-kicker">${briefing.mode === "sample" ? "Real Sample Run" : "Live Briefing"}</p>
+      <h3>${escapeHtml(briefing.title)}</h3>
+      <p class="document-question">${escapeHtml(briefing.question)}</p>
+      <dl class="document-meta">
+        <div><dt>As of</dt><dd>${escapeHtml(formatDate(briefing.generated_at))}</dd></div>
+        <div><dt>Coverage</dt><dd>${escapeHtml(briefing.coverage_window)}</dd></div>
+        <div><dt>Sources</dt><dd>${briefing.sources.length} dated links</dd></div>
+        ${briefing.sample_captured_at ? `<div><dt>Recorded</dt><dd>${escapeHtml(formatDate(briefing.sample_captured_at))}</dd></div>` : ""}
+      </dl>
+    </header>
+
+    <section class="executive-summary">
+      <p class="document-label">Executive summary</p>
+      <p class="summary-copy">${escapeHtml(formatted(briefing.executive_summary))}</p>
+      <div class="inline-citations">${citationLinks(briefing.executive_source_ids, true)}</div>
+      <h4>Key takeaways</h4>
+      <ol>
+        ${briefing.key_takeaways.map((takeaway) => `
+          <li><span>${escapeHtml(formatted(takeaway.text))}</span><span class="inline-citations">${citationLinks(takeaway.source_ids, true)}</span></li>
+        `).join("")}
+      </ol>
+    </section>
+
+    <nav class="document-contents" aria-label="Briefing contents">
+      <span>In this briefing</span>
+      ${briefing.sections.map((section, index) => `<a href="#briefing-section-${index + 1}">${index + 1}. ${escapeHtml(section.title)}</a>`).join("")}
+      ${briefing.upcoming_events.length ? '<a href="#upcoming-events">Upcoming events</a>' : ""}
+      <a href="#briefing-sources">Sources</a>
+    </nav>
+
+    <div class="document-sections">
+      ${briefing.sections.map((section, sectionIndex) => `
+        <section class="document-section" id="briefing-section-${sectionIndex + 1}">
+          <div class="section-number">${String(sectionIndex + 1).padStart(2, "0")}</div>
+          <div>
+            <h3>${escapeHtml(section.title)}</h3>
+            <p class="section-summary">${escapeHtml(formatted(section.summary))}</p>
+            <div class="inline-citations section-citations">${citationLinks(section.source_ids, true)}</div>
+            <div class="developments">
+              ${section.items.map((item) => `
+                <article class="development">
+                  <h4>${escapeHtml(item.headline)}</h4>
+                  <div class="source-line">${citationLinks(item.source_ids)}</div>
+                  <p>${escapeHtml(formatted(item.summary))}</p>
+                  <dl>
+                    <div><dt>Analyst implication</dt><dd>${escapeHtml(formatted(item.analyst_implication))}</dd></div>
+                    <div><dt>Watch next</dt><dd>${escapeHtml(formatted(item.watch_next))}</dd></div>
+                  </dl>
+                </article>
+              `).join("")}
+            </div>
+            ${section.coverage_note ? `<p class="coverage-note"><strong>Coverage note:</strong> ${escapeHtml(section.coverage_note)}</p>` : ""}
+          </div>
+        </section>
+      `).join("")}
+    </div>
+
+    ${briefing.upcoming_events.length ? `
+      <section class="upcoming-events" id="upcoming-events">
+        <p class="document-label">Upcoming events</p>
+        ${briefing.upcoming_events.map((event) => `
+          <article>
+            <time>${escapeHtml(formatDate(event.date))}</time>
+            <div><h4>${escapeHtml(event.event)}</h4><p>${escapeHtml(event.why_it_matters)}</p><div class="inline-citations">${citationLinks(event.source_ids, true)}</div></div>
           </article>
         `).join("")}
-      </div>
-    </article>
-  `).join("");
+      </section>
+    ` : ""}
+
+    <section class="source-appendix" id="briefing-sources">
+      <p class="document-label">Sources</p>
+      <ol>
+        ${briefing.sources.map((source) => `
+          <li id="source-${escapeHtml(source.id)}">
+            <span>${escapeHtml(source.id)}</span>
+            <div><a href="${escapeHtml(source.url)}" target="_blank" rel="noreferrer">${escapeHtml(source.title)}</a><p>${escapeHtml(source.publisher)} · ${escapeHtml(formatDate(source.publication_date))}</p></div>
+          </li>
+        `).join("")}
+      </ol>
+    </section>
+  `;
 }
 
 function renderProposal() {
@@ -257,7 +364,7 @@ function renderProposal() {
     <div><b>Research</b>${escapeHtml((state.proposal.research.preferred_sources || []).join(", ") || "No source change")}</div>
     <div><b>Editorial</b>${escapeHtml(state.proposal.editorial.tone)} · lead with implication: ${state.proposal.editorial.lead_with_implication}</div>
     <div><b>Display</b>${escapeHtml(state.proposal.display.currency_style)}</div>
-    <button id="approve-memory" type="button">Approve and save memory</button>
+    <button id="approve-memory" type="button">Approve and save preferences</button>
   `;
   $("#approve-memory").addEventListener("click", approveMemory);
 }
@@ -266,57 +373,75 @@ async function approveMemory() {
   if (!state.proposal) return;
   const saved = await api("/api/memory/approve", { patch: state.proposal });
   state.preferences = saved.preferences;
-  $("#memory-state").textContent = `Memory v${saved.version} approved at ${new Date(saved.approved_at).toLocaleString()}.`;
+  $("#memory-state").textContent = `Preferences v${saved.version} approved at ${new Date(saved.approved_at).toLocaleString()}.`;
   $("#proposal").innerHTML = "";
   state.proposal = null;
-  addTrace([`Human approved memory v${saved.version}.`]);
+  addTrace([`Human approved preferences v${saved.version}.`]);
   renderBriefing();
+}
+
+function lockSampleInputs(locked) {
+  ["#focus", "#question", "#time-window", "#custom-domains", "#broader-web"].forEach((selector) => {
+    $(selector).disabled = locked;
+  });
+  $$('.source-options input').forEach((input) => { input.disabled = locked; });
 }
 
 function setMode(mode) {
   state.mode = mode;
-  $$("[data-mode]").forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
+  $$('[data-mode]').forEach((button) => button.classList.toggle("active", button.dataset.mode === mode));
   const live = mode === "live";
+  lockSampleInputs(!live);
+  if (!live) {
+    $("#focus").value = "global-markets";
+    $("#question").value = sampleQuestion;
+    $("#time-window").value = "7";
+  }
   $("#mode-explainer").innerHTML = live
-    ? "<strong>Live mode</strong><span>Agno + local Ollama + public web search. No paid API.</span>"
-    : "<strong>Fixture mode</strong><span>Deterministic sample data. No model or internet call.</span>";
-  $("#data-badge").textContent = live ? "Live · local Ollama" : "Fixture · no model call";
+    ? "<strong>Live briefing</strong><span>Uses the local Ollama model and current public search results.</span>"
+    : "<strong>Real Sample Run</strong><span>Recorded August 25, 2026 with real articles, dates, and source links.</span>";
+  $("#data-badge").textContent = live ? "Live news" : "Real sample · Aug 25, 2026";
   $("#data-badge").classList.toggle("live", live);
-  $("#run-mode-title").textContent = live ? "Current-news mode" : "Reliable teaching mode";
+  $("#run-mode-title").textContent = live ? "Current news" : "Recorded Global Markets briefing";
   $("#run-mode-copy").textContent = live
-    ? "Uses your local open model and searches the public web."
-    : "Uses the bundled fixture and never needs a model.";
+    ? "The first live run can take several minutes on a local model."
+    : "Loads a reliable, sourced run without model or network calls.";
+  $("#run-all").textContent = live ? "Create live briefing" : "Load Sample Run";
   resetFrom("planner");
-  clearTrace(`Switched to ${mode} mode.`);
+  clearTrace(`Switched to ${live ? "Live Briefing" : "Sample Run"}.`);
+  applyAvailability();
 }
 
 async function loadHealth() {
   try {
     const health = await api("/api/health");
     const badge = $("#server-state");
+    state.liveReady = health.model_ready;
     if (health.model_ready) {
       badge.textContent = `${health.configured_model} ready`;
       badge.className = "server-state ready";
     } else if (health.ollama_running) {
-      badge.textContent = `${health.configured_model} not downloaded`;
+      badge.textContent = `${health.configured_model} not installed`;
       badge.className = "server-state warning";
     } else {
       badge.textContent = "Ollama is not running";
       badge.className = "server-state warning";
     }
   } catch (error) {
+    state.liveReady = false;
     $("#server-state").textContent = "Backend unavailable";
     $("#server-state").className = "server-state warning";
   }
+  applyAvailability();
 }
 
 async function loadMemory() {
   try {
     const memory = await api("/api/memory");
     state.preferences = memory.preferences;
-    if (memory.version) $("#memory-state").textContent = `Memory v${memory.version} is active.`;
+    if (memory.version) $("#memory-state").textContent = `Preferences v${memory.version} are active.`;
   } catch (error) {
-    // The default preference object remains sufficient for the demo.
+    // Default preferences are sufficient when no saved file is available.
   }
 }
 
@@ -332,3 +457,4 @@ $("#clear-trace").addEventListener("click", () => clearTrace());
 
 loadHealth();
 loadMemory();
+applyAvailability();

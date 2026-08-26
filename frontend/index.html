@@ -3,11 +3,8 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta
-      name="description"
-      content="A beginner-friendly demonstration of an agentic financial-news workflow."
-    />
-    <title>Briefing Lab — Local Financial News Agents</title>
+    <meta name="description" content="A local, sourced financial-news briefing built with visible agents." />
+    <title>Briefing Lab | Local Financial News Agents</title>
     <link rel="stylesheet" href="/static/styles.css" />
     <script src="/static/app.js" defer></script>
   </head>
@@ -15,31 +12,32 @@
     <header class="site-header">
       <a class="brand" href="#top"><span>BL</span> Briefing Lab</a>
       <nav aria-label="Page sections">
-        <a href="#workflow">Agent flow</a>
+        <a href="#workflow">Create</a>
+        <a href="#agents">Agents</a>
         <a href="#briefing">Briefing</a>
-        <a href="#repository">Code map</a>
+        <a href="#repository">Code</a>
       </nav>
-      <div class="server-state" id="server-state">Checking local model…</div>
+      <div class="server-state" id="server-state">Checking local model</div>
     </header>
 
     <main id="top">
       <section class="hero">
         <div>
-          <p class="eyebrow">One local Python process · no paid API keys</p>
-          <h1>Build a financial news briefing one visible agent at a time.</h1>
+          <p class="eyebrow">Local model · public sources · visible workflow</p>
+          <h1>Turn current financial news into a briefing you can verify.</h1>
           <p class="lead">
-            Run a reliable fixture or search current news with an open model on your own machine.
-            Every agent, skill, result, and approved memory stays inspectable.
+            Choose a market focus. The agents plan the coverage, collect dated sources, and write a
+            concise document with links on every development.
           </p>
-          <a class="primary-link" href="#workflow">Start a briefing</a>
+          <a class="primary-link" href="#workflow">Create a live briefing</a>
         </div>
-        <aside class="concept-card" aria-label="Four agent building blocks">
-          <p class="eyebrow">Four building blocks</p>
+        <aside class="concept-card" aria-label="How the system works">
+          <p class="eyebrow">Four clear roles</p>
           <dl>
-            <div><dt>Agent</dt><dd>owns a decision</dd></div>
-            <div><dt>Skill</dt><dd>reusable playbook</dd></div>
-            <div><dt>Tool</dt><dd>searches the live web</dd></div>
-            <div><dt>Memory</dt><dd>approved preference</dd></div>
+            <div><dt>Plan</dt><dd>choose useful coverage</dd></div>
+            <div><dt>Research</dt><dd>find and validate sources</dd></div>
+            <div><dt>Write</dt><dd>explain the implications</dd></div>
+            <div><dt>Learn</dt><dd>save approved preferences</dd></div>
           </dl>
         </aside>
       </section>
@@ -47,38 +45,38 @@
       <section class="panel" id="workflow">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">01 · Define the brief</p>
-            <h2>What should the analyst understand?</h2>
+            <p class="eyebrow">01 · Create</p>
+            <h2>Set the analyst's coverage.</h2>
           </div>
-          <div class="mode-switch" aria-label="Data mode">
-            <button class="active" type="button" data-mode="fixture">Fixture</button>
-            <button type="button" data-mode="live">Live news</button>
+          <div class="mode-switch" aria-label="Run mode">
+            <button class="active" type="button" data-mode="live">Live briefing</button>
+            <button type="button" data-mode="sample">Sample run</button>
           </div>
         </div>
 
         <div class="mode-explainer" id="mode-explainer">
-          <strong>Fixture mode</strong>
-          <span>Deterministic sample data. No model or internet call.</span>
+          <strong>Live briefing</strong>
+          <span>Uses the local Ollama model and current public search results.</span>
         </div>
 
         <div class="input-grid">
           <label>
-            <span>Analyst focus</span>
+            <span>Market focus</span>
             <select id="focus">
-              <option value="sustainable">Sustainable research</option>
-              <option value="consumer">Consumer</option>
+              <option value="global-markets">Global markets</option>
+              <option value="stocks">Stocks and earnings</option>
               <option value="private-credit">Private credit</option>
+              <option value="rates-bonds">Rates and bonds</option>
+              <option value="banking-deals">Banking and deals</option>
+              <option value="commodities-currencies">Commodities and currencies</option>
             </select>
           </label>
           <label class="question-field">
-            <span>News question</span>
-            <input
-              id="question"
-              value="What material sustainability developments happened in the last seven days?"
-            />
+            <span>Research question</span>
+            <input id="question" value="What moved global financial markets this week, and what should investors watch next?" />
           </label>
           <label>
-            <span>Time window</span>
+            <span>Coverage window</span>
             <select id="time-window">
               <option value="1">Last day</option>
               <option value="7" selected>Last 7 days</option>
@@ -86,43 +84,44 @@
             </select>
           </label>
           <label>
-            <span>Custom source domains</span>
+            <span>Custom domains</span>
             <input id="custom-domains" placeholder="example.com, company.com" />
           </label>
         </div>
 
         <fieldset>
           <legend>Preferred source directions</legend>
-          <p>These guide the search. They do not make a source automatically correct.</p>
+          <p>Preferred sources rank higher. Search can broaden when coverage is thin.</p>
           <div class="source-options">
             <label><input type="checkbox" value="Reuters" checked />Reuters</label>
-            <label><input type="checkbox" value="SEC & company IR" checked />SEC & company IR</label>
+            <label><input type="checkbox" value="SEC & company IR" checked />SEC and company IR</label>
+            <label><input type="checkbox" value="Associated Press" />Associated Press</label>
             <label><input type="checkbox" value="CNBC" />CNBC</label>
             <label><input type="checkbox" value="Bloomberg" />Bloomberg</label>
             <label><input type="checkbox" value="Financial Times" />Financial Times</label>
           </div>
           <label class="broader-toggle">
             <input id="broader-web" type="checkbox" checked />
-            Search beyond preferred sources when evidence is thin
+            Include other public sources when preferred sources do not provide enough coverage
           </label>
         </fieldset>
 
         <div class="run-bar">
           <div>
-            <strong id="run-mode-title">Reliable teaching mode</strong>
-            <span id="run-mode-copy">Uses the bundled fixture and never needs a model.</span>
+            <strong id="run-mode-title">Current news</strong>
+            <span id="run-mode-copy">The first live run can take several minutes on a local model.</span>
           </div>
-          <button class="primary-button" id="run-all" type="button">Run full briefing</button>
+          <button class="primary-button" id="run-all" type="button">Create live briefing</button>
         </div>
       </section>
 
-      <section class="panel agent-panel">
+      <section class="panel agent-panel" id="agents">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">02 · Run and inspect</p>
-            <h2>Agno agents with a simple Python workflow.</h2>
+            <p class="eyebrow">02 · Inspect</p>
+            <h2>Follow each decision and handoff.</h2>
           </div>
-          <span class="data-badge" id="data-badge">Fixture · no model call</span>
+          <span class="data-badge live" id="data-badge">Live news</span>
         </div>
 
         <div class="agent-layout">
@@ -130,9 +129,9 @@
             <article class="agent-card" data-card="planner">
               <span class="agent-number">1</span>
               <div>
-                <div class="agent-title"><h3>Planner Agent</h3><span data-status="planner">Waiting</span></div>
+                <div class="agent-title"><h3>Coverage Planner</h3><span data-status="planner">Waiting</span></div>
                 <code>plan-financial-research</code>
-                <p>Turns the question into exactly three research sections.</p>
+                <p>Selects three broad areas that fit the question and are likely to have useful coverage.</p>
                 <div class="agent-output" id="planner-output"></div>
               </div>
               <button type="button" data-run="planner">Run</button>
@@ -141,9 +140,9 @@
             <article class="agent-card" data-card="researcher">
               <span class="agent-number">2</span>
               <div>
-                <div class="agent-title"><h3>News Research Agent</h3><span data-status="researcher">Waiting</span></div>
+                <div class="agent-title"><h3>News Researcher</h3><span data-status="researcher">Waiting</span></div>
                 <code>search-and-ground-news</code>
-                <p>Runs three searches in parallel with Agno WebSearchTools and public search.</p>
+                <p>Runs search ladders, checks dates and link formats, and removes repeated coverage.</p>
                 <div class="agent-output" id="researcher-output"></div>
               </div>
               <button type="button" data-run="researcher">Run</button>
@@ -152,9 +151,9 @@
             <article class="agent-card" data-card="editor">
               <span class="agent-number">3</span>
               <div>
-                <div class="agent-title"><h3>Briefing Editor Agent</h3><span data-status="editor">Waiting</span></div>
+                <div class="agent-title"><h3>Briefing Writer</h3><span data-status="editor">Waiting</span></div>
                 <code>write-three-section-briefing</code>
-                <p>Selects three supported items per section and explains the business relevance.</p>
+                <p>Writes the executive summary, briefing sections, watchlist, and citations.</p>
                 <div class="agent-output" id="editor-output"></div>
               </div>
               <button type="button" data-run="editor">Run</button>
@@ -163,9 +162,9 @@
             <article class="agent-card" data-card="feedback">
               <span class="agent-number">4</span>
               <div>
-                <div class="agent-title"><h3>Feedback & Memory Agent</h3><span data-status="feedback">Waiting</span></div>
+                <div class="agent-title"><h3>Feedback and Preferences</h3><span data-status="feedback">Waiting</span></div>
                 <code>learn-briefing-preferences</code>
-                <p>Proposes typed preferences; a person decides whether to save them.</p>
+                <p>Proposes presentation preferences. A person approves every saved change.</p>
                 <div class="agent-output" id="feedback-output"></div>
               </div>
               <button type="button" data-run="feedback">Run</button>
@@ -174,8 +173,8 @@
 
           <aside class="activity" aria-live="polite">
             <div><strong>Observable activity</strong><button id="clear-trace" type="button">Clear</button></div>
-            <ol id="trace"><li><span>01</span><p>Ready. Choose a mode and run the Planner.</p></li></ol>
-            <p class="activity-note">Actions and structured results only—never private chain-of-thought.</p>
+            <ol id="trace"><li><span>01</span><p>Ready. Run the planner or create the full briefing.</p></li></ol>
+            <p class="activity-note">This panel shows actions and structured results. It does not show private reasoning.</p>
           </aside>
         </div>
       </section>
@@ -183,49 +182,49 @@
       <section class="panel briefing-panel" id="briefing">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">03 · Review</p>
-            <h2>Three sections with three items each.</h2>
+            <p class="eyebrow">03 · Read</p>
+            <h2>Your financial briefing.</h2>
           </div>
-          <span class="contract-badge" id="contract-badge" hidden>Contract passed · 3 × 3</span>
+          <span class="briefing-badge" id="briefing-badge" hidden></span>
         </div>
         <div class="empty-state" id="briefing-empty">
-          <strong>9</strong>
-          <h3>Your briefing will appear here.</h3>
-          <p>Run the first three agents or use Run full briefing.</p>
+          <strong>BR</strong>
+          <h3>The briefing will appear here.</h3>
+          <p>Create a live briefing or load the recorded Sample Run.</p>
         </div>
-        <div class="briefing-grid" id="briefing-grid"></div>
+        <article class="briefing-document" id="briefing-document" hidden></article>
       </section>
 
       <section class="feedback-section">
         <div>
-          <p class="eyebrow">04 · Improve with approval</p>
-          <h2>Feedback becomes a proposal, not a hidden system change.</h2>
-          <p>The approved JSON is stored locally in <code>data/memory.local.json</code>.</p>
+          <p class="eyebrow">04 · Refine</p>
+          <h2>Save presentation preferences with approval.</h2>
+          <p>Preferences control tone, currency, dates, detail, and source priority. They never change the evidence.</p>
         </div>
         <div class="feedback-card">
           <label>
             <span>Your feedback</span>
             <textarea id="feedback" rows="4">Use $4.2bn instead of USD 4.2 billion. Lead with the implication and keep the tone direct.</textarea>
           </label>
-          <button class="primary-button" id="run-feedback" type="button" disabled>Ask Feedback Agent</button>
+          <button class="primary-button" id="run-feedback" type="button" disabled>Review feedback</button>
           <div id="proposal"></div>
-          <p class="memory-state" id="memory-state">No approved local memory yet.</p>
+          <p class="memory-state" id="memory-state">No approved local preferences yet.</p>
         </div>
       </section>
 
       <section class="panel repository" id="repository">
         <div class="section-heading">
           <div>
-            <p class="eyebrow">05 · Code map</p>
-            <h2>Five folders and one command.</h2>
+            <p class="eyebrow">05 · Review the code</p>
+            <h2>Five folders and one local command.</h2>
           </div>
         </div>
         <div class="repo-grid">
-          <article><code>frontend/</code><h3>Plain HTML, CSS, JS</h3><p>No React, Node, or build step.</p></article>
-          <article><code>backend/</code><h3>FastAPI + Agno</h3><p>Serves both the UI and the agent endpoints.</p></article>
-          <article><code>skills/</code><h3>Agent playbooks</h3><p>One readable SKILL.md per agent.</p></article>
-          <article><code>data/</code><h3>Fixture and memory</h3><p>Transparent local JSON files.</p></article>
-          <article><code>tests/</code><h3>Contracts</h3><p>Checks the fixture workflow and 3 × 3 result.</p></article>
+          <article><code>frontend/</code><h3>Plain browser files</h3><p>No Node process or build step.</p></article>
+          <article><code>backend/</code><h3>FastAPI and Agno</h3><p>One process serves the UI and agent endpoints.</p></article>
+          <article><code>skills/</code><h3>Agent playbooks</h3><p>One readable skill for each agent role.</p></article>
+          <article><code>data/</code><h3>Real Sample Run</h3><p>A dated, sourced recording for a reliable demo.</p></article>
+          <article><code>tests/</code><h3>Evidence contracts</h3><p>Checks citations, dates, links, and writing rules.</p></article>
         </div>
         <pre class="command">python -m backend.app</pre>
       </section>
@@ -233,7 +232,7 @@
 
     <footer>
       <strong>Briefing Lab</strong>
-      <span>Educational research demo. It does not recommend trades.</span>
+      <span>Educational research. It does not recommend trades.</span>
     </footer>
   </body>
 </html>

@@ -3,18 +3,25 @@ from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 
-FocusArea = Literal["sustainable", "consumer", "private-credit"]
-RunMode = Literal["fixture", "live"]
+FocusArea = Literal[
+    "global-markets",
+    "stocks",
+    "private-credit",
+    "rates-bonds",
+    "banking-deals",
+    "commodities-currencies",
+]
+RunMode = Literal["sample", "live"]
 
 
 class BriefRequest(BaseModel):
-    focus: FocusArea
+    focus: FocusArea = "global-markets"
     question: str = Field(min_length=3, max_length=500)
     time_window_days: int = Field(default=7, ge=1, le=365)
     preferred_sources: list[str] = Field(default_factory=list, max_length=10)
     custom_domains: list[str] = Field(default_factory=list, max_length=10)
     broader_web: bool = True
-    mode: RunMode = "fixture"
+    mode: RunMode = "live"
 
     @field_validator("custom_domains")
     @classmethod
@@ -42,43 +49,87 @@ class NewsCandidate(BaseModel):
     headline: str
     source: str
     url: str
-    publication_date: str | None = None
+    publication_date: str
     evidence_excerpt: str
     relevance: str
-    watch_next: str = "Confirm the next company, market, or policy update."
+    watch_next: str
 
 
 class SectionResearchResult(BaseModel):
     section_title: str
-    candidates: list[NewsCandidate] = Field(default_factory=list, max_length=6)
+    candidates: list[NewsCandidate] = Field(default_factory=list, max_length=8)
+    coverage_note: str | None = None
 
 
 class ResearchBundle(BaseModel):
     sections: list[SectionResearchResult] = Field(min_length=3, max_length=3)
 
 
+class SourceRecord(BaseModel):
+    id: str
+    publisher: str
+    title: str
+    publication_date: str
+    url: str
+
+    @field_validator("url")
+    @classmethod
+    def require_web_url(cls, value: str) -> str:
+        if not value.startswith(("http://", "https://")):
+            raise ValueError("Source URL must be an absolute web URL")
+        return value
+
+
+class SourcedStatement(BaseModel):
+    text: str
+    source_ids: list[str] = Field(min_length=1, max_length=4)
+
+
 class BriefingItem(BaseModel):
     headline: str
-    what_happened: str
-    why_it_matters: str
+    summary: str
+    analyst_implication: str
     watch_next: str
-    source: str
-    url: str | None = None
-    publication_date: str | None = None
-    status: Literal["supported", "insufficient_evidence"] = "supported"
+    source_ids: list[str] = Field(min_length=1, max_length=3)
 
 
 class BriefingSection(BaseModel):
     title: str
-    purpose: str
-    items: list[BriefingItem] = Field(min_length=3, max_length=3)
+    summary: str
+    source_ids: list[str] = Field(default_factory=list, max_length=8)
+    items: list[BriefingItem] = Field(default_factory=list, max_length=3)
+    coverage_note: str | None = None
+
+
+class UpcomingEvent(BaseModel):
+    date: str
+    event: str
+    why_it_matters: str
+    source_ids: list[str] = Field(min_length=1, max_length=3)
+
+
+class DraftBriefing(BaseModel):
+    executive_summary: str
+    executive_source_ids: list[str] = Field(min_length=1, max_length=8)
+    key_takeaways: list[SourcedStatement] = Field(min_length=3, max_length=5)
+    sections: list[BriefingSection] = Field(min_length=3, max_length=3)
+    upcoming_events: list[UpcomingEvent] = Field(default_factory=list, max_length=5)
 
 
 class AnalystBriefing(BaseModel):
+    title: str
     focus: str
+    question: str
     generated_at: str
+    coverage_window: str
     mode: RunMode
+    executive_summary: str
+    executive_source_ids: list[str] = Field(min_length=1, max_length=8)
+    key_takeaways: list[SourcedStatement] = Field(min_length=3, max_length=5)
     sections: list[BriefingSection] = Field(min_length=3, max_length=3)
+    upcoming_events: list[UpcomingEvent] = Field(default_factory=list, max_length=5)
+    sources: list[SourceRecord] = Field(min_length=1)
+    sample_captured_at: str | None = None
 
 
 class ResearchPreferences(BaseModel):
@@ -94,7 +145,7 @@ class EditorialPreferences(BaseModel):
 
 class DisplayPreferences(BaseModel):
     currency_style: str = "USD 4.2 billion"
-    date_style: str = "25 Aug 2026"
+    date_style: str = "August 25, 2026"
 
 
 class PreferencePatch(BaseModel):
@@ -115,7 +166,7 @@ class EditorRequest(BaseModel):
 
 
 class FeedbackRequest(BaseModel):
-    mode: RunMode = "fixture"
+    mode: RunMode = "live"
     feedback: str = Field(min_length=3, max_length=1000)
     briefing: AnalystBriefing
     current_preferences: PreferencePatch = Field(default_factory=PreferencePatch)
@@ -123,4 +174,3 @@ class FeedbackRequest(BaseModel):
 
 class ApprovalRequest(BaseModel):
     patch: PreferencePatch
-
