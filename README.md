@@ -37,8 +37,9 @@ Feedback Agent         proposes tone and display preferences for approval
 Agno Memory            versions approved preferences and shares the active version
 ```
 
-The UI makes every stage runnable on its own and displays the structured handoff between stages. It
-shows actions and results, not private model reasoning.
+The UI makes every stage runnable on its own and displays the structured handoff between stages. The
+activity stream labels agent starts, memory reads, model and tool calls, queued search queries,
+validation, results, and elapsed time. It shows operational telemetry, not private model reasoning.
 
 ## Repository structure
 

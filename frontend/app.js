@@ -8,6 +8,7 @@ const state = {
   proposalBaseVersion: 0,
   preferences: null,
   memory: null,
+  modelName: "local model",
   busy: false,
 };
 
@@ -59,19 +60,33 @@ function requestPayload() {
   };
 }
 
+function traceLine(message, type = "event") {
+  return { message, type };
+}
+
 function addTrace(lines) {
   const trace = $("#trace");
   for (const line of lines) {
+    const event = typeof line === "string" ? traceLine(line) : line;
     const number = trace.children.length + 1;
     const item = document.createElement("li");
-    item.innerHTML = `<span>${String(number).padStart(2, "0")}</span><p>${escapeHtml(line)}</p>`;
+    item.innerHTML = `
+      <span>${String(number).padStart(2, "0")}</span>
+      <b class="trace-kind ${escapeHtml(event.type)}">${escapeHtml(event.type)}</b>
+      <p>${escapeHtml(event.message)}</p>
+    `;
     trace.append(item);
   }
   trace.scrollTop = trace.scrollHeight;
 }
 
 function clearTrace(message = "Activity cleared.") {
-  $("#trace").innerHTML = `<li><span>01</span><p>${escapeHtml(message)}</p></li>`;
+  $("#trace").innerHTML = `<li><span>01</span><b class="trace-kind event">event</b><p>${escapeHtml(message)}</p></li>`;
+}
+
+function elapsedSince(startedAt) {
+  const seconds = (performance.now() - startedAt) / 1000;
+  return seconds < 10 ? `${seconds.toFixed(1)}s` : `${Math.round(seconds)}s`;
 }
 
 function setStage(stage, status) {
@@ -117,9 +132,25 @@ function setBusy(busy) {
 }
 
 async function plannerStage() {
+  const startedAt = performance.now();
   resetFrom("planner");
   setStage("planner", "running");
-  addTrace([`Coverage Planner started in ${state.mode} mode.`]);
+  addTrace([
+    traceLine(`Coverage Planner started in ${state.mode} mode.`, "agent"),
+    traceLine(
+      state.memory?.active_version
+        ? `Loading approved research preferences from active memory v${state.memory.active_version}.`
+        : "Loading default research preferences. No approved memory is active.",
+      "memory",
+    ),
+    traceLine(
+      state.mode === "live"
+        ? `Calling ${state.modelName} through the Agno Coverage Planner.`
+        : "Loading the recorded planner output. No model call is made in Sample Run.",
+      state.mode === "live" ? "model" : "sample",
+    ),
+    traceLine("Validating the ResearchPlan contract: exactly 3 broad sections.", "validation"),
+  ]);
   try {
     const response = await api("/api/plan", requestPayload());
     state.plan = response.result;
@@ -128,39 +159,83 @@ async function plannerStage() {
     if (state.memory?.active_version) {
       $("#planner-output").insertAdjacentHTML("beforeend", `<span>Memory v${state.memory.active_version}</span>`);
     }
-    addTrace(response.trace);
+    const elapsed = elapsedSince(startedAt);
+    $("#planner-output").insertAdjacentHTML("beforeend", `<span>${elapsed}</span>`);
+    addTrace([
+      ...response.trace.map((message) => traceLine(message, "result")),
+      traceLine(`Coverage Planner completed in ${elapsed}.`, "time"),
+    ]);
     setStage("planner", "complete");
   } catch (error) {
     setStage("planner", "attention");
-    addTrace([error.message]);
+    addTrace([
+      traceLine(error.message, "error"),
+      traceLine(`Coverage Planner stopped after ${elapsedSince(startedAt)}.`, "time"),
+    ]);
     throw error;
   }
 }
 
 async function researcherStage() {
   if (!state.plan) throw new Error("Run the Coverage Planner first.");
+  const startedAt = performance.now();
   resetFrom("researcher");
   setStage("researcher", "running");
-  addTrace(["News Researcher started 3 independent coverage searches."]);
+  const searchEvents = state.mode === "live"
+    ? state.plan.sections.flatMap((section) => [
+        traceLine(`Search stream: ${section.title}.`, "agent"),
+        ...section.queries.map((query) => traceLine(`Queued query: “${query}”`, "query")),
+      ])
+    : [traceLine("Loading recorded dated articles. No web search call is made in Sample Run.", "sample")];
+  addTrace([
+    traceLine("News Researcher started 3 coverage streams in parallel.", "agent"),
+    ...(state.mode === "live" ? [traceLine("Calling Agno WebSearchTools with DDGS public metasearch.", "tool")] : []),
+    ...searchEvents,
+    traceLine("Checking publication dates, absolute URLs, duplicate links, and excluded topics.", "validation"),
+  ]);
   try {
     const response = await api("/api/research", { request: requestPayload(), plan: state.plan });
     state.research = response.result;
     const count = state.research.sections.reduce((total, section) => total + section.candidates.length, 0);
-    $("#researcher-output").innerHTML = `<span>3 searches</span><span>${count} dated articles</span><span>Links validated</span>${state.memory?.active_version ? `<span>Memory v${state.memory.active_version}</span>` : ""}`;
-    addTrace(response.trace);
+    const elapsed = elapsedSince(startedAt);
+    $("#researcher-output").innerHTML = `<span>3 searches</span><span>${count} dated articles</span><span>Links validated</span>${state.memory?.active_version ? `<span>Memory v${state.memory.active_version}</span>` : ""}<span>${elapsed}</span>`;
+    addTrace([
+      ...response.trace.map((message) => traceLine(message, "result")),
+      traceLine(`News Researcher completed in ${elapsed}.`, "time"),
+    ]);
     setStage("researcher", "complete");
   } catch (error) {
     setStage("researcher", "attention");
-    addTrace([error.message]);
+    addTrace([
+      traceLine(error.message, "error"),
+      traceLine(`News Researcher stopped after ${elapsedSince(startedAt)}.`, "time"),
+    ]);
     throw error;
   }
 }
 
 async function editorStage() {
   if (!state.plan || !state.research) throw new Error("Run the Planner and Researcher first.");
+  const startedAt = performance.now();
   resetFrom("editor");
   setStage("editor", "running");
-  addTrace(["Briefing Writer started from the validated research bundle."]);
+  const candidateCount = state.research.sections.reduce((total, section) => total + section.candidates.length, 0);
+  addTrace([
+    traceLine(`Briefing Writer received ${candidateCount} dated research candidates.`, "agent"),
+    traceLine(
+      state.memory?.active_version
+        ? `Loading tone, implication order, and jargon rules from memory v${state.memory.active_version}.`
+        : "Loading default editorial preferences.",
+      "memory",
+    ),
+    traceLine(
+      state.mode === "live"
+        ? `Calling ${state.modelName} through the Agno Briefing Writer.`
+        : "Loading the recorded briefing. No model call is made in Sample Run.",
+      state.mode === "live" ? "model" : "sample",
+    ),
+    traceLine("Validating 3 sections, citation IDs, source links, dates, and evidence coverage.", "validation"),
+  ]);
   try {
     const response = await api("/api/edit", {
       request: requestPayload(),
@@ -169,21 +244,39 @@ async function editorStage() {
     });
     state.briefing = response.result;
     const itemCount = state.briefing.sections.reduce((total, section) => total + section.items.length, 0);
-    $("#editor-output").innerHTML = `<span>Executive summary</span><span>${itemCount} developments</span><span>${state.briefing.sources.length} sources</span>${state.memory?.active_version ? `<span>Memory v${state.memory.active_version}</span>` : ""}`;
-    addTrace(response.trace);
+    const elapsed = elapsedSince(startedAt);
+    $("#editor-output").innerHTML = `<span>Executive summary</span><span>${itemCount} developments</span><span>${state.briefing.sources.length} sources</span>${state.memory?.active_version ? `<span>Memory v${state.memory.active_version}</span>` : ""}<span>${elapsed}</span>`;
+    addTrace([
+      ...response.trace.map((message) => traceLine(message, "result")),
+      traceLine(`Briefing Writer completed in ${elapsed}.`, "time"),
+    ]);
     setStage("editor", "complete");
     renderBriefing();
   } catch (error) {
     setStage("editor", "attention");
-    addTrace([error.message]);
+    addTrace([
+      traceLine(error.message, "error"),
+      traceLine(`Briefing Writer stopped after ${elapsedSince(startedAt)}.`, "time"),
+    ]);
     throw error;
   }
 }
 
 async function feedbackStage() {
   if (!state.briefing) throw new Error("Create a briefing before reviewing feedback.");
+  const startedAt = performance.now();
   setStage("feedback", "running");
-  addTrace(["Feedback Agent started. No preference has been saved."]);
+  addTrace([
+    traceLine("Feedback and Memory Agent received the analyst’s feedback.", "agent"),
+    traceLine(`Comparing the proposal with active memory v${state.memory?.active_version || 0}.`, "memory"),
+    traceLine(
+      state.mode === "live"
+        ? `Calling ${state.modelName} to classify feedback into typed preference fields.`
+        : "Running the deterministic Sample Run preference classifier. No model call is made.",
+      state.mode === "live" ? "model" : "sample",
+    ),
+    traceLine("Guarding every preference field not explicitly mentioned in the feedback.", "validation"),
+  ]);
   try {
     const response = await api("/api/feedback", {
       mode: state.mode,
@@ -193,13 +286,20 @@ async function feedbackStage() {
     });
     state.proposal = response.result;
     state.proposalBaseVersion = state.memory?.active_version || 0;
-    addTrace(response.trace);
+    const elapsed = elapsedSince(startedAt);
+    addTrace([
+      ...response.trace.map((message) => traceLine(message, "result")),
+      traceLine(`Feedback and Memory Agent completed in ${elapsed}. Human approval is still required.`, "time"),
+    ]);
     setStage("feedback", "complete");
     renderProposal();
-    $("#feedback-output").innerHTML = "<span>Preference proposal ready</span><span>Approval required</span>";
+    $("#feedback-output").innerHTML = `<span>Preference proposal ready</span><span>Approval required</span><span>${elapsed}</span>`;
   } catch (error) {
     setStage("feedback", "attention");
-    addTrace([error.message]);
+    addTrace([
+      traceLine(error.message, "error"),
+      traceLine(`Feedback and Memory Agent stopped after ${elapsedSince(startedAt)}.`, "time"),
+    ]);
     throw error;
   }
 }
@@ -222,11 +322,13 @@ async function runOne(stage) {
 async function runAll() {
   if (state.busy) return;
   setBusy(true);
+  const startedAt = performance.now();
   clearTrace(`${state.mode === "live" ? "Live briefing" : "Sample Run"} started.`);
   try {
     await plannerStage();
     await researcherStage();
     await editorStage();
+    addTrace([traceLine(`Full briefing workflow completed in ${elapsedSince(startedAt)}.`, "time")]);
   } catch (error) {
     // Stop at the first failed handoff and keep its visible message.
   } finally {
@@ -579,6 +681,7 @@ async function loadHealth() {
     const health = await api("/api/health");
     const badge = $("#server-state");
     state.liveReady = health.model_ready;
+    state.modelName = health.configured_model;
     if (health.model_ready) {
       badge.textContent = `${health.configured_model} ready`;
       badge.className = "server-state ready";

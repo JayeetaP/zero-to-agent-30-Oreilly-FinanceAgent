@@ -48,6 +48,13 @@ developments. The workflow never creates blank placeholder items.
 
 Both modes return the same Pydantic models.
 
+## Operational telemetry
+
+The browser records observable events around each API call: agent start, memory read, model or search
+tool call, queued queries, validation contract, structured result, and elapsed time. Research result
+traces also report retained candidate counts per section. These events expose the system's operations
+without exposing private model reasoning.
+
 ## Responsibilities
 
 - **Agno:** model calls, structured output, and public search tools.

@@ -309,6 +309,10 @@ async def research_sections(
     trace = [
         "Researcher ran 3 independent search ladders in parallel.",
         f"Public search returned {candidate_count} dated articles after URL validation.",
+        *[
+            f"{section.section_title}: retained {len(section.candidates)} supported candidates."
+            for section in results
+        ],
     ]
     if memory_version:
         trace.insert(0, f"Researcher applied source and exclusion memory v{memory_version}.")

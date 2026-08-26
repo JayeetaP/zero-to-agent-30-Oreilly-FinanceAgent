@@ -96,9 +96,20 @@ fieldset > p { margin: 0 0 14px; color: var(--muted); font-size: 12px; }
 .activity > div { display: flex; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,.1); font-size: 12px; }
 .activity button { border: 0; background: transparent; color: #9fafad; font-size: 10px; }
 .activity ol { max-height: 480px; margin: 0; padding: 10px 16px 0; overflow: auto; list-style: none; }
-.activity li { display: grid; grid-template-columns: 25px 1fr; gap: 7px; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
+.activity li { display: grid; grid-template-columns: 25px 48px 1fr; gap: 7px; align-items: start; padding: 9px 0; border-bottom: 1px solid rgba(255,255,255,.08); }
 .activity li span { color: #799590; font: 10px ui-monospace, monospace; }
 .activity li p { margin: 0; font: 11px/1.5 ui-monospace, monospace; }
+.trace-kind { padding: 3px 4px; border-radius: 4px; background: rgba(255,255,255,.09); color: #b8c9c6; font: 800 7px ui-monospace, monospace; letter-spacing: .04em; text-align: center; text-transform: uppercase; }
+.trace-kind.agent { background: rgba(231,88,54,.22); color: #ffc3b4; }
+.trace-kind.memory { background: rgba(139,180,154,.2); color: #c6e4cf; }
+.trace-kind.model { background: rgba(110,155,191,.22); color: #c4e1f4; }
+.trace-kind.tool { background: rgba(242,193,78,.2); color: #f9dda0; }
+.trace-kind.query { background: rgba(255,255,255,.12); color: #dce6e4; }
+.trace-kind.validation { background: rgba(171,147,196,.2); color: #e1cff2; }
+.trace-kind.result { background: rgba(91,163,115,.22); color: #c6e7d0; }
+.trace-kind.time { background: rgba(255,255,255,.08); color: #aebfbd; }
+.trace-kind.sample { background: rgba(242,193,78,.14); color: #ebd79f; }
+.trace-kind.error { background: rgba(231,88,54,.28); color: #ffd0c5; }
 .activity-note { margin: 12px 16px 16px; color: #9badab; font-size: 10px; line-height: 1.45; }
 
 .briefing-panel { background: #eae7de; }

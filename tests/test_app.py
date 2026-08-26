@@ -91,6 +91,9 @@ def test_ui_and_sample_copy_follow_the_style_rule() -> None:
     assert "Add to active memory" in ui_copy
     assert "Save separately" in ui_copy
     assert "Cumulative snapshot at version" in ui_copy
+    assert "DDGS public metasearch" in ui_copy
+    assert "completed in" in ui_copy
+    assert "tool calls, queries, validation, results, and timing" in ui_copy
     assert "Active memory" in ui_copy
     assert "Memory history" in ui_copy
 
