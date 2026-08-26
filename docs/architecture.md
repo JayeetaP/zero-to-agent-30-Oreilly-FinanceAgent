@@ -61,5 +61,7 @@ Both modes return the same Pydantic models.
 
 The application does not enable automatic or agentic memory updates. The Feedback Agent returns a
 typed proposal, the user approves it, and only then does `MemoryManager` save a new version. One stable
-record points to the active version and append-only records preserve the approval history. Research,
+record points to the active cumulative version and append-only records preserve the approval history.
+Approval can merge a proposal into active memory or save it separately without changing the active
+record. Each history entry retains both its delta and its complete snapshot. Research,
 editorial, and display preferences feed the relevant stages, but source validation remains code-owned.

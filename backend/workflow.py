@@ -357,6 +357,66 @@ def _validated_ids(ids: list[str], valid_ids: set[str]) -> list[str]:
     return list(dict.fromkeys(item for item in ids if item in valid_ids))
 
 
+def _contains_any(text: str, phrases: tuple[str, ...]) -> bool:
+    return any(phrase in text for phrase in phrases)
+
+
+def _explicit_source_order(feedback: str, current_sources: list[str]) -> list[str] | None:
+    lowered = feedback.lower()
+    if not _contains_any(
+        lowered,
+        ("prefer", "prioritize", "priority", "rank", "favour", "favor", "over"),
+    ):
+        return None
+
+    mentioned = sorted(
+        (
+            (lowered.find(source.lower()), source)
+            for source in SOURCE_DOMAINS
+            if source.lower() in lowered
+        ),
+        key=lambda item: item[0],
+    )
+    if not mentioned:
+        return None
+
+    ordered_mentions = [source for _, source in mentioned]
+    remaining = [source for source in current_sources if source not in ordered_mentions]
+    return [*ordered_mentions, *remaining]
+
+
+def _guard_preference_patch(
+    feedback: str,
+    current: PreferencePatch,
+    candidate: PreferencePatch,
+) -> PreferencePatch:
+    """Apply only fields the feedback explicitly addresses."""
+    lowered = feedback.lower()
+    patch = current.model_copy(deep=True)
+
+    source_order = _explicit_source_order(feedback, current.research.preferred_sources)
+    if source_order is not None:
+        patch.research.preferred_sources = source_order
+    if _contains_any(lowered, ("exclude", "avoid", "omit", "do not cover", "don't cover")):
+        patch.research.excluded_topics = candidate.research.excluded_topics
+
+    if _contains_any(
+        lowered,
+        ("tone", "voice", "direct", "concise", "formal", "professional", "conversational", "calm"),
+    ):
+        patch.editorial.tone = candidate.editorial.tone
+    if "implication" in lowered or "lead with" in lowered:
+        patch.editorial.lead_with_implication = candidate.editorial.lead_with_implication
+    if _contains_any(lowered, ("jargon", "technical term", "terminology", "define terms")):
+        patch.editorial.jargon_level = candidate.editorial.jargon_level
+
+    if _contains_any(lowered, ("currency", "usd", "dollar", "$", " billion", " million", "bn", "mn")):
+        patch.display.currency_style = candidate.display.currency_style
+    if _contains_any(lowered, ("date format", "dates", "month", "dd/mm", "mm/dd")):
+        patch.display.date_style = candidate.display.date_style
+    return patch
+
+
 async def edit_briefing(
     request: BriefRequest,
     plan: ResearchPlan,
@@ -545,20 +605,29 @@ async def propose_preferences(
 ) -> tuple[PreferencePatch, list[str]]:
     if mode == "sample":
         lowered = feedback.lower()
-        patch = current.model_copy(deep=True)
-        patch.editorial.lead_with_implication = "implication" in lowered or "lead with" in lowered
+        candidate = current.model_copy(deep=True)
+        if "implication" in lowered or "lead with" in lowered:
+            candidate.editorial.lead_with_implication = not _contains_any(
+                lowered,
+                ("do not lead", "don't lead", "stop leading", "no longer lead"),
+            )
         if "direct" in lowered:
-            patch.editorial.tone = "direct, professional, analyst-oriented"
+            candidate.editorial.tone = "direct, professional, analyst-oriented"
         if "bn" in lowered or "$" in feedback:
-            patch.display.currency_style = "$4.2bn"
+            candidate.display.currency_style = "$4.2bn"
+        patch = _guard_preference_patch(feedback, current, candidate)
         return patch, [
             "Feedback Agent classified the request into typed preference fields.",
+            "Code preserved every preference the feedback did not address.",
             "The preference proposal is waiting for human approval.",
         ]
 
     await require_live_model()
     prompt = f"""
 Translate the feedback into durable presentation preferences. Return a proposal only.
+
+Preserve every current value unless the feedback explicitly asks to change that field. A source
+preference changes research.preferred_sources, not editorial or display preferences.
 
 Feedback: {feedback}
 Current preferences: {current.model_dump_json(indent=2)}
@@ -569,8 +638,10 @@ Reviewed briefing: {briefing.model_dump_json(indent=2)}
         user_id="local-demo",
         session_id=f"feedback-{uuid4()}",
     )
-    patch = _coerce(PreferencePatch, response.content)
+    candidate = _coerce(PreferencePatch, response.content)
+    patch = _guard_preference_patch(feedback, current, candidate)
     return patch, [
         f"Feedback Agent used local model {OLLAMA_MODEL}.",
+        "Code preserved every preference the feedback did not address.",
         "The preference proposal is waiting for human approval.",
     ]

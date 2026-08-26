@@ -175,6 +175,8 @@ class FeedbackRequest(BaseModel):
 class ApprovalRequest(BaseModel):
     patch: PreferencePatch
     feedback: str = Field(default="Approved preference update", max_length=1000)
+    strategy: Literal["merge", "separate"] = "merge"
+    base_version: int | None = Field(default=None, ge=0)
 
 
 class MemoryActivateRequest(BaseModel):

@@ -85,6 +85,12 @@ def test_ui_and_sample_copy_follow_the_style_rule() -> None:
     assert "insufficient evidence" not in ui_copy.lower()
     assert "insufficient evidence" not in sample_copy.lower()
     assert "beginner-friendly" not in ui_copy.lower()
+    assert "Use $4.2bn instead of USD 4.2 billion" not in ui_copy
+    assert "Share a durable preference" in ui_copy
+    assert "preferred sources or topics to exclude" in ui_copy
+    assert "Add to active memory" in ui_copy
+    assert "Save separately" in ui_copy
+    assert "Cumulative snapshot at version" in ui_copy
     assert "Active memory" in ui_copy
     assert "Memory history" in ui_copy
 
@@ -120,6 +126,30 @@ def test_feedback_is_proposed_before_preferences_are_written(tmp_path: Path, mon
     assert approval.json()["version"] == 1
     assert approval.json()["history"][0]["changes"]
     assert memory_file.exists()
+
+
+def test_source_feedback_changes_only_source_priority() -> None:
+    _, _, briefing = run_sample_workflow()
+    current = PreferencePatch()
+    current.research.preferred_sources = ["Reuters"]
+    current.editorial.lead_with_implication = True
+    current.display.currency_style = "$4.2bn"
+
+    response = client.post(
+        "/api/feedback",
+        json={
+            "mode": "sample",
+            "feedback": "Prioritize Bloomberg over Reuters.",
+            "briefing": briefing,
+            "current_preferences": current.model_dump(),
+        },
+    )
+
+    assert response.status_code == 200
+    proposal = response.json()["result"]
+    assert proposal["research"]["preferred_sources"] == ["Bloomberg", "Reuters"]
+    assert proposal["editorial"] == current.editorial.model_dump()
+    assert proposal["display"] == current.display.model_dump()
 
 
 def test_three_feedback_rounds_create_visible_history_and_can_be_reactivated(
@@ -163,3 +193,44 @@ def test_three_feedback_rounds_create_visible_history_and_can_be_reactivated(
     assert activated.json()["latest_version"] == 3
     assert activated.json()["preferences"]["editorial"]["lead_with_implication"] is True
     assert activated.json()["preferences"]["display"]["currency_style"] == "USD 4.2 billion"
+
+
+def test_separate_memory_version_does_not_replace_active_memory(tmp_path: Path, monkeypatch) -> None:
+    from backend import memory
+
+    monkeypatch.setattr(memory, "MEMORY_DB_FILE", tmp_path / "memory.db")
+    monkeypatch.setattr(memory, "LEGACY_MEMORY_FILE", tmp_path / "legacy.json")
+    memory._manager_for.cache_clear()
+
+    active = PreferencePatch()
+    active.editorial.lead_with_implication = True
+    first = client.post(
+        "/api/memory/approve",
+        json={
+            "patch": active.model_dump(),
+            "feedback": "Lead with the implication.",
+            "strategy": "merge",
+            "base_version": 0,
+        },
+    )
+    assert first.status_code == 200
+
+    separate = active.model_copy(deep=True)
+    separate.research.preferred_sources = ["Bloomberg"]
+    second = client.post(
+        "/api/memory/approve",
+        json={
+            "patch": separate.model_dump(),
+            "feedback": "Keep Bloomberg as a separate option.",
+            "strategy": "separate",
+            "base_version": 1,
+        },
+    )
+    saved = second.json()
+    assert second.status_code == 200
+    assert saved["saved_version"] == 2
+    assert saved["saved_strategy"] == "separate"
+    assert saved["active_version"] == 1
+    assert saved["latest_version"] == 2
+    assert saved["preferences"]["research"]["preferred_sources"] == []
+    assert saved["history"][0]["strategy"] == "separate"

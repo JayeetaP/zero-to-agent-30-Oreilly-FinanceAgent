@@ -143,8 +143,9 @@ Feedback follows a human approval boundary and uses Agno's native memory compone
 1. The Feedback Agent proposes a preference patch.
 2. The UI shows each proposed value beside the current value.
 3. Nothing is saved until the user approves it.
-4. Agno `MemoryManager` writes an append-only approved version plus one active version to `data/memory.db`.
-5. The UI shows active research, editorial, and display memory, the complete approval history, and a control to reactivate an earlier version.
+4. The user chooses whether to add the proposal to cumulative active memory or save it as a separate inactive snapshot.
+5. Agno `MemoryManager` writes the append-only approved version to `data/memory.db`.
+6. The UI shows each version's new changes and its complete cumulative snapshot, plus a control to restore an earlier snapshot.
 
 The Planner and Researcher use source and exclusion preferences. The Writer uses tone, implication
 order, and jargon preferences. The browser renderer applies currency and date formatting. Memory may

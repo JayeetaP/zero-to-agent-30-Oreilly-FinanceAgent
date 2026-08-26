@@ -5,6 +5,7 @@ const state = {
   research: null,
   briefing: null,
   proposal: null,
+  proposalBaseVersion: 0,
   preferences: null,
   memory: null,
   busy: false,
@@ -95,17 +96,19 @@ function resetFrom(stage) {
   }
   if (start <= 3) {
     state.proposal = null;
+    state.proposalBaseVersion = state.memory?.active_version || 0;
     $("#proposal").innerHTML = "";
   }
 }
 
 function applyAvailability() {
   const liveUnavailable = state.mode === "live" && !state.liveReady;
+  const feedbackReady = $("#feedback").value.trim().length >= 3;
   $("#run-all").disabled = state.busy || liveUnavailable;
   $$('[data-run]').forEach((button) => {
     button.disabled = state.busy || liveUnavailable || (button.dataset.run === "feedback" && !state.briefing);
   });
-  $("#run-feedback").disabled = state.busy || liveUnavailable || !state.briefing;
+  $("#run-feedback").disabled = state.busy || liveUnavailable || !state.briefing || !feedbackReady;
 }
 
 function setBusy(busy) {
@@ -189,6 +192,7 @@ async function feedbackStage() {
       current_preferences: state.preferences || {},
     });
     state.proposal = response.result;
+    state.proposalBaseVersion = state.memory?.active_version || 0;
     addTrace(response.trace);
     setStage("feedback", "complete");
     renderProposal();
@@ -399,26 +403,54 @@ function renderProposal() {
   $("#proposal").innerHTML = `
     <div class="proposal-heading"><strong>Proposed memory update</strong><span>${changes.length} changed field${changes.length === 1 ? "" : "s"}</span></div>
     ${changeMarkup}
+    <fieldset class="memory-save-choice">
+      <legend>How should this proposal be saved?</legend>
+      <label>
+        <input type="radio" name="memory-strategy" value="merge" checked />
+        <span><b>Add to active memory</b><small>Keep all existing rules and layer these changes on top.</small></span>
+      </label>
+      <label>
+        <input type="radio" name="memory-strategy" value="separate" />
+        <span><b>Save separately</b><small>Store this snapshot for later without changing active memory.</small></span>
+      </label>
+    </fieldset>
     <div class="proposal-actions">
-      <button id="approve-memory" type="button" ${changes.length ? "" : "disabled"}>Approve as new version</button>
+      <button id="approve-memory" type="button" ${changes.length ? "" : "disabled"}>Approve and add to memory</button>
       <button id="reject-memory" class="secondary-button" type="button">Reject proposal</button>
     </div>
   `;
   $("#approve-memory").addEventListener("click", approveMemory);
   $("#reject-memory").addEventListener("click", rejectProposal);
+  $$('input[name="memory-strategy"]').forEach((input) => {
+    input.addEventListener("change", updateApprovalLabel);
+  });
+}
+
+function updateApprovalLabel() {
+  const strategy = document.querySelector('input[name="memory-strategy"]:checked')?.value || "merge";
+  $("#approve-memory").textContent = strategy === "merge"
+    ? "Approve and add to memory"
+    : "Approve separate version";
 }
 
 async function approveMemory() {
   if (!state.proposal) return;
+  const strategy = document.querySelector('input[name="memory-strategy"]:checked')?.value || "merge";
   const saved = await api("/api/memory/approve", {
     patch: state.proposal,
     feedback: $("#feedback").value.trim() || "Approved preference update",
+    strategy,
+    base_version: state.proposalBaseVersion,
   });
   state.memory = saved;
   state.preferences = saved.preferences;
   $("#proposal").innerHTML = "";
   state.proposal = null;
-  addTrace([`Human approved preferences v${saved.version}.`]);
+  addTrace([
+    strategy === "merge"
+      ? `Human added preferences v${saved.saved_version} to active cumulative memory.`
+      : `Human saved preferences v${saved.saved_version} separately. Active memory remains v${saved.active_version}.`,
+  ]);
   syncMemoryToInputs();
   renderMemory();
   renderBriefing();
@@ -426,6 +458,7 @@ async function approveMemory() {
 
 function rejectProposal() {
   state.proposal = null;
+  state.proposalBaseVersion = state.memory?.active_version || 0;
   $("#proposal").innerHTML = "";
   $("#feedback-output").innerHTML = "<span>Proposal rejected</span><span>Memory unchanged</span>";
   addTrace(["Human rejected the proposal. Approved memory did not change."]);
@@ -466,13 +499,21 @@ function renderMemory() {
     <article class="memory-version-card ${entry.version === memory.active_version ? "active" : ""}">
       <div class="memory-version-title">
         <strong>Version ${entry.version}</strong>
-        ${entry.version === memory.active_version ? "<span>Active</span>" : `<button type="button" data-activate-memory="${entry.version}">Make active</button>`}
+        ${entry.version === memory.active_version ? "<span>Active</span>" : `<button type="button" data-activate-memory="${entry.version}">Restore this snapshot</button>`}
       </div>
       <time>${escapeHtml(formatDate(entry.approved_at))}</time>
       <p>${escapeHtml(entry.feedback || "Approved preference update")}</p>
+      <div class="memory-version-kind">${entry.strategy === "separate" ? "Saved separately. Active memory was unchanged." : "Added to cumulative memory. Earlier rules were retained."}</div>
+      <strong class="memory-change-label">Changes added in this version</strong>
       <ul>${(entry.changes || []).map((change) => `
         <li><b>${escapeHtml(change.label)}</b><span>${escapeHtml(displayValue(change.before))} to ${escapeHtml(displayValue(change.after))}</span></li>
       `).join("") || "<li><span>No field changes recorded.</span></li>"}</ul>
+      <div class="memory-snapshot">
+        <strong>Cumulative snapshot at version ${entry.version}</strong>
+        <span><b>Research:</b> ${escapeHtml(displayValue(entry.preferences.research.preferred_sources))}; excluded ${escapeHtml(displayValue(entry.preferences.research.excluded_topics))}</span>
+        <span><b>Editorial:</b> ${escapeHtml(entry.preferences.editorial.tone)}; lead with implication ${entry.preferences.editorial.lead_with_implication ? "yes" : "no"}; ${escapeHtml(entry.preferences.editorial.jargon_level)}</span>
+        <span><b>Display:</b> ${escapeHtml(entry.preferences.display.currency_style)}; ${escapeHtml(entry.preferences.display.date_style)}</span>
+      </div>
     </article>
   `).join("") : '<p class="empty-memory-history">Approve feedback to create the first memory version.</p>';
 
@@ -576,6 +617,7 @@ $$('[data-mode]').forEach((button) => button.addEventListener("click", () => set
 $$('[data-run]').forEach((button) => button.addEventListener("click", () => runOne(button.dataset.run)));
 $("#run-all").addEventListener("click", runAll);
 $("#run-feedback").addEventListener("click", () => runOne("feedback"));
+$("#feedback").addEventListener("input", applyAvailability);
 $("#clear-trace").addEventListener("click", () => clearTrace());
 
 loadHealth();

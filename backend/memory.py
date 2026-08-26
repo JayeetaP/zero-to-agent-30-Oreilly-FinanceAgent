@@ -103,6 +103,7 @@ def _snapshot(
     feedback: str,
     changes: list[dict[str, Any]],
     approved_at: str | None = None,
+    strategy: str = "merge",
 ) -> dict[str, Any]:
     return {
         "version": version,
@@ -110,6 +111,7 @@ def _snapshot(
         "approved_at": approved_at or datetime.now(UTC).isoformat(),
         "feedback": feedback,
         "changes": changes,
+        "strategy": strategy,
     }
 
 
@@ -183,8 +185,19 @@ def load_memory() -> dict[str, Any]:
     }
 
 
-def approve_memory(patch: PreferencePatch, feedback: str = "Approved preference update") -> dict[str, Any]:
+def approve_memory(
+    patch: PreferencePatch,
+    feedback: str = "Approved preference update",
+    strategy: str = "merge",
+    base_version: int | None = None,
+) -> dict[str, Any]:
+    if strategy not in {"merge", "separate"}:
+        raise ValueError(f"Unknown memory strategy: {strategy}")
     current = load_memory()
+    if base_version is not None and base_version != int(current["active_version"]):
+        raise ValueError(
+            "Active memory changed after this proposal was created. Review the feedback again before saving."
+        )
     before = PreferencePatch.model_validate(current["preferences"])
     next_version = int(current.get("latest_version", 0)) + 1
     snapshot = _snapshot(
@@ -192,6 +205,7 @@ def approve_memory(patch: PreferencePatch, feedback: str = "Approved preference 
         preferences=patch,
         feedback=feedback.strip() or "Approved preference update",
         changes=preference_changes(before, patch),
+        strategy=strategy,
     )
     _save_record(
         f"{HISTORY_PREFIX}{next_version}",
@@ -199,13 +213,17 @@ def approve_memory(patch: PreferencePatch, feedback: str = "Approved preference 
         ["briefing-preferences", "history"],
         snapshot["feedback"],
     )
-    _save_record(
-        ACTIVE_MEMORY_ID,
-        snapshot,
-        ["briefing-preferences", "active"],
-        snapshot["feedback"],
-    )
-    return load_memory()
+    if strategy == "merge":
+        _save_record(
+            ACTIVE_MEMORY_ID,
+            snapshot,
+            ["briefing-preferences", "active"],
+            snapshot["feedback"],
+        )
+    saved = load_memory()
+    saved["saved_version"] = next_version
+    saved["saved_strategy"] = strategy
+    return saved
 
 
 def activate_memory(version: int) -> dict[str, Any]:

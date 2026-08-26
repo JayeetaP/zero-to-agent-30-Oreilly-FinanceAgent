@@ -98,7 +98,15 @@ async def memory() -> dict:
 
 @app.post("/api/memory/approve")
 async def approve(payload: ApprovalRequest) -> dict:
-    return approve_memory(payload.patch, payload.feedback)
+    try:
+        return approve_memory(
+            payload.patch,
+            payload.feedback,
+            strategy=payload.strategy,
+            base_version=payload.base_version,
+        )
+    except ValueError as error:
+        raise HTTPException(status_code=409, detail=str(error)) from error
 
 
 @app.post("/api/memory/activate")

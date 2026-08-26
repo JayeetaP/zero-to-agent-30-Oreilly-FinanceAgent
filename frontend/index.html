@@ -206,8 +206,21 @@
           <div class="feedback-card">
             <label>
               <span>Your feedback</span>
-              <textarea id="feedback" rows="4">Use $4.2bn instead of USD 4.2 billion. Lead with the implication and keep the tone direct.</textarea>
+              <textarea
+                id="feedback"
+                rows="4"
+                placeholder="Example: Prioritize Bloomberg over Reuters."
+                aria-describedby="feedback-guidance"
+              ></textarea>
             </label>
+            <div class="feedback-guidance" id="feedback-guidance">
+              <p>Share a durable preference that should apply to future briefings.</p>
+              <ul>
+                <li><b>Research</b><span>preferred sources or topics to exclude</span></li>
+                <li><b>Editorial</b><span>tone, structure, implication order, or jargon</span></li>
+                <li><b>Display</b><span>currency and date formatting</span></li>
+              </ul>
+            </div>
             <button class="primary-button" id="run-feedback" type="button" disabled>Review feedback</button>
             <div id="proposal"></div>
           </div>
